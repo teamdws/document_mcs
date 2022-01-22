@@ -53,7 +53,7 @@ def facture_pdf():
     pdf.ln(2*th) 
     pdf.cell(col_width, 2*th, align='C', border=1)
     pdf.cell(col_width, 2*th, txt=str(contrat_data['idcontrat']),align='C', border=1)
-    pdf.cell(col_width, 2*th, "", align='C', border=1)
+    pdf.cell(col_width, 2*th, txt=str(contrat_data['client_idclient']), align='C', border=1)
     pdf.cell(40)
     pdf.set_font('Arial','B',8) 
     pdf.cell(col_width, 2*th, txt=facture_adresse['adresses'][0]['STREET_NUMBER']+ " " +facture_adresse['adresses'][0]['ROUTE'], align = 'A')

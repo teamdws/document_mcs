@@ -1,4 +1,4 @@
-from flask import Blueprint, make_response, request
+from flask import Blueprint, make_response
 import  requests
 import  json
 from fpdf import FPDF
@@ -6,14 +6,18 @@ from datetime import *
 
 contrat=Blueprint("contrat", __name__)
 
+API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id=90046140"
+URL_FACTURE="https://back-mcs-v1.herokuapp.com/web/facture?id=95"
+URL_ADRESSE="https://back-mcs-v1.herokuapp.com/web/client?id=223"
+
+    
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
-    id_contrat= request.args.get('contrat')
-    API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+id_contrat
     contrat_data_response= requests.get(API_CONTRAT)
     contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
-    URL_CLIENT="https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client_idclient'])
-    facture_adresse_response= requests.get(URL_CLIENT)
+    facture_response= requests.get(URL_FACTURE)
+    facture= json.loads(facture_response.content.decode('utf-8'))
+    facture_adresse_response= requests.get(URL_ADRESSE)
     facture_adresse= json.loads(facture_adresse_response.content.decode('utf-8'))
     #data = json.loads(request.args.get('text'))
     pdf = FPDF()
@@ -21,7 +25,7 @@ def contrat_pdf():
     epw = pdf.w - 2*pdf.l_margin
     th = pdf.font_size
     pdf.set_fill_color(220)
-    date_creation=date.fromisoformat(contrat_data['datecreaclient'])
+    date_facturation=date.fromisoformat(facture['datefact'])
     date_livraison=date.fromisoformat(contrat_data['datelivraison'])
     date_retour=date.fromisoformat(contrat_data['dateretour'])
     montantTotalHT=0
@@ -37,7 +41,7 @@ def contrat_pdf():
     #header---------------------------------------------
     tmpVarX = pdf.get_x()
     tmpVarY = pdf.get_y()
-    pdf.multi_cell(epw/2.3, th,type_document+str(contrat_data['idcontrat'])+" Date : "+str(date_creation.strftime("%d/%m/%y"))+'\n'
+    pdf.multi_cell(epw/2.3, th,type_document+str(contrat_data['idcontrat'])+" Date : "+str(date_facturation.strftime("%d/%m/%y"))+'\n'
     ""+ "Suivi par : "+contrat_data['commercial'],  border=1)
     pdf.ln(1)
     pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
@@ -75,7 +79,7 @@ def contrat_pdf():
     pdf.cell(  epw/10, 2*th, fill=True, txt="Ref.",  align='C', border=1)
     pdf.cell(  113, 2*th, fill=True, txt="Description",align='C', border=1)
     pdf.cell(  epw/10, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
-    pdf.cell(  epw/20, 2*th, fill=True, txt="R",  align='C', border=1)
+    pdf.cell(  epw/20, 2*th, fill=True, txt="R"+ " "+facture['type_remise'],  align='C', border=1)
     pdf.cell(  epw/11, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
     pdf.ln(2*th)    
     for i in range(len(contrat_data['services'])):

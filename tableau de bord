@@ -9,9 +9,3 @@ voir les mentions
 
 pour le calcul des prix ->   prix * tva *qte*nbjour(ttc)  (pas le nbjour pour les services )
 
-JEUDI ------ réu 
-recevoir l'ID des différentes URL en dynamique 
-
-http://127.0.0.1:5000/contrat/pdf?contrat=90046140
-
-<a href="http://127.0.0.1:5000/contrat/pdf?contrat=90046140">Voir le PDF</a>
