@@ -27,9 +27,25 @@ def contrat_pdf():
     poids_equipement=0
     prix_services=0
     totalTVA=0.0
+    adresse_chantier=""
+    adresse_facturation=0
+    adresse=0
     frais_financier=contrat_data['fraisfinancier'] if contrat_data['fraisfinancier'] != None else 0
+    
+    #boucle sur l'adrsse de client
+    for i in range(len(facture_adresse['adresses'])):
+          if facture_adresse['adresses'][i]['type']=="chantier":
+              for j in range(len(contrat_data['contacts'])):
+                if facture_adresse['adresses'][i]['idadresse']==contrat_data['contacts'][j]['adresse_idadresse']:
+                  adresse_chantier=facture_adresse['adresses'][i]
+                  contact_chantier=contrat_data['contacts'][j]        
+          else:
+           for j in range(len(contrat_data['contacts'])):
+                if facture_adresse['adresses'][i]['idadresse']==contrat_data['contacts'][j]['adresse_idadresse']:
+                  adresse_facture=facture_adresse['adresses'][i]
+                  contact_facture=contrat_data['contacts'][j]
     #logo------------------------------------
-    pdf.image("./logo.jpg", 75, 8, 60)
+    pdf.image("./logo.png", 75, 8, 60)
     pdf.set_font('Times','',10.0) 
     pdf.ln(20)
     type_document="Contrat N° : " if contrat_data['statutcont'] != "Brouillon" else "Devis N° : "
@@ -42,19 +58,19 @@ def contrat_pdf():
     pdf.ln(1)
     pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
     pdf.ln(8)
-    pdf.multi_cell(epw/2.3, th, str(facture_adresse['adresses'][1]['TITRE'])+'\n'+
-    str(facture_adresse['adresses'][1]['STREET_NUMBER']+" "+facture_adresse['adresses'][1]['ROUTE'] )+'\n'+
-    str(facture_adresse['adresses'][1]['codepostal'])+"    "+facture_adresse['adresses'][1]['ville']+'\n'+
-    "Contact : "+str(facture_adresse['contactes'][0]['civilite'])+ " " +str(facture_adresse['contactes'][0]['prenom'])+ " " +str(facture_adresse['contactes'][0]['nom'])+'\n'+
-    "Tel : "+str(facture_adresse['contactes'][0]['telmobile']), border=1)
-    #Replace le positionnement du curseur coin supérieur droit de la cellule créée
+    pdf.multi_cell(epw/2.3, th, str(adresse_chantier['TITRE'])+'\n'+
+    str(adresse_chantier['STREET_NUMBER']+" "+adresse_chantier['ROUTE'] )+'\n'+
+    str(adresse_chantier['codepostal'])+"    "+adresse_chantier['ville']+'\n'+
+    "Contact : "+str(contact_chantier['civilite'])+ " " +str(contact_chantier['prenom'])+ " " +str(contact_chantier['nom'])+'\n'+
+    "Tel : "+str(contact_chantier['telmobile']), border=1)
+  
     pdf.set_xy(tmpVarX+100,tmpVarY)
     pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'])+'\n'+
     str(facture_adresse['raisonsocial'])+'\n'+
-    str(facture_adresse['adresses'][0]['STREET_NUMBER'])+ " " +str(facture_adresse['adresses'][0]['ROUTE'])+'\n'+
-    str(facture_adresse['adresses'][0]['codepostal'])+ " " +facture_adresse['adresses'][0]['ville']+'\n\n'+
-    "Demandé par : "+str(facture_adresse['contactes'][0]['civilite'])+ " " +str(facture_adresse['contactes'][0]['prenom'])+ " " +str(facture_adresse['contactes'][0]['nom'])+'\n'+
-    "Tel : "+str(facture_adresse['contactes'][0]['telmobile'])+'\n'+
+    str(adresse_facture['STREET_NUMBER'])+ " " +str(adresse_facture['ROUTE'])+'\n'+
+    str(adresse_facture['codepostal'])+ " " +adresse_facture['ville']+'\n\n'+
+    "Demandé par : "+str(contact_facture['civilite'])+ " " +str(contact_facture['prenom'])+ " " +str(contact_facture['nom'])+'\n'+
+    "Tel : "+str(contact_facture['telmobile'])+'\n'+
     "Fax : " ,border=1)
     pdf.ln(7)
     tmpVarX = pdf.get_x()
@@ -62,7 +78,7 @@ def contrat_pdf():
     pdf.multi_cell(epw/2.3, th, "Date debut contrat : "+str(date_debut.strftime("%d/%m/%y"))+'\n'+
     "Date fin contrat : "+str(date_fin.strftime("%d/%m/%y"))+'\n'+
     "Période de location : "+str(contrat_data['nbdays'])+" Jours"+'\n'+
-    "Type Facturation  : "+str(contrat_data['typefacture'])
+    "Type Facturation  : "+str(contrat_data['frequencefacturation'])+"  mois"
     ,border=1)
     pdf.set_xy(tmpVarX+100,tmpVarY)
     pdf.multi_cell(epw/2.3, th,"Nos tarifs sont dégressifs, la valeur des prix varie\n"
