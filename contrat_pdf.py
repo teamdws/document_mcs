@@ -20,7 +20,7 @@ def contrat_pdf():
     epw = pdf.w - 2*pdf.l_margin
     th = pdf.font_size
     pdf.set_fill_color(220)
-    date_creation=date.fromisoformat(contrat_data['datedebcont'])
+    date_creation=date.fromisoformat(contrat_data['datedebcont']) if contrat_data['statutcont'] != "Brouillon" else date.today()
     date_debut=date.fromisoformat(contrat_data['datedebcont'])
     date_fin=date.fromisoformat(contrat_data['datefincont'])
     montantTotalHT=0
@@ -43,7 +43,7 @@ def contrat_pdf():
     pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
     pdf.ln(8)
     pdf.multi_cell(epw/2.3, th, str(facture_adresse['adresses'][1]['TITRE'])+'\n'+
-    str(facture_adresse['adresses'][1]['STREET_NUMBER']+" "+facture_adresse['adresses'][1]['ROUTE']+ " " +facture_adresse['adresses'][1]['ville'])+'\n'+
+    str(facture_adresse['adresses'][1]['STREET_NUMBER']+" "+facture_adresse['adresses'][1]['ROUTE'] )+'\n'+
     str(facture_adresse['adresses'][1]['codepostal'])+"    "+facture_adresse['adresses'][1]['ville']+'\n'+
     "Contact : "+str(facture_adresse['contactes'][0]['civilite'])+ " " +str(facture_adresse['contactes'][0]['prenom'])+ " " +str(facture_adresse['contactes'][0]['nom'])+'\n'+
     "Tel : "+str(facture_adresse['contactes'][0]['telmobile']), border=1)
@@ -71,12 +71,19 @@ def contrat_pdf():
     "entrainera une revalorisation des prix à la hausse. ", border=1)
     pdf.ln(10)
     #line of invoice--------------------------
-    pdf.cell(  epw/30, 2*th, fill=True, txt="Qté", align='C', border=1)
-    pdf.cell(  epw/7, 2*th, fill=True, txt="Ref.",  align='C', border=1)
-    pdf.cell(  113, 2*th, fill=True, txt="Description",align='C', border=1)
-    pdf.cell(  epw/10, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
-    pdf.cell(  epw/11, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
-    pdf.ln(2*th)    
+    if contrat_data['statutcont'] != "Brouillon":
+      pdf.cell(  epw/30, 2*th, fill=True, txt="Qté", align='C', border=1)
+      pdf.cell(  epw/7, 2*th, fill=True, txt="Ref.",  align='C', border=1) 
+      pdf.cell(  113, 2*th, fill=True, txt="Description",align='C', border=1)
+      pdf.cell(  epw/10, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
+      pdf.cell(  epw/11, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
+    else:
+      pdf.cell(  epw/15, 2*th, fill=True, txt="Qté", align='C', border=1)
+      pdf.cell(  120, 2*th, fill=True, txt="Description",align='C', border=1)
+      pdf.cell(  epw/8, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
+      pdf.cell(  epw/8, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
+    
+    pdf.ln(2*th)  
     for i in range(len(contrat_data['services'])):
             prix_services=prix_services+contrat_data['services'][i]['prix']
     for i in range(len(contrat_data['equipements'])):
@@ -84,14 +91,21 @@ def contrat_pdf():
         montant_net=float(contrat_data['equipements'][i]['prix'])
         montantTTC=float((contrat_data['equipements'][i]['Qte']*contrat_data['nbdays'])*float(contrat_data['equipements'][i]['prix'])-contrat_data['equipements'][i]['remise']  )
         pdf.set_font('Arial','B',10) 
-        pdf.cell(epw/30, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
-        ref="" if contrat_data['statutcont'] == "Brouillon" else str(contrat_data['equipements'][i]['reference'])
-        pdf.cell(epw/7, 2*th, txt=str(ref),align='C', border=1)
-        pdf.set_font('Arial',size=8) 
-        pdf.cell(113, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
-        pdf.set_font('Arial','B',10) 
-        pdf.cell(  epw/10, 2*th, txt=str(round(montant_net,2)), align='C', border=1)
-        pdf.cell(  epw/11, 2*th, txt=str(round(montantTTC,2)), align='C', border=1)
+        if contrat_data['statutcont'] != "Brouillon":
+          pdf.cell(epw/30, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
+          pdf.cell(epw/7, 2*th, txt=str(contrat_data['equipements'][i]['reference']),align='C', border=1)
+          pdf.set_font('Arial',size=8) 
+          pdf.cell(113, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
+          pdf.set_font('Arial','B',10) 
+          pdf.cell(  epw/10, 2*th, txt=str(round(montant_net,2)), align='C', border=1)
+          pdf.cell(  epw/11, 2*th, txt=str(round(montantTTC,2)), align='C', border=1)
+        else :
+          pdf.cell(epw/15, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
+          pdf.set_font('Arial',size=8) 
+          pdf.cell(120, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
+          pdf.set_font('Arial','B',10) 
+          pdf.cell(  epw/8, 2*th, txt=str(round(montant_net,2)), align='C', border=1)
+          pdf.cell(  epw/8, 2*th, txt=str(round(montantTTC,2)), align='C', border=1)
         totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
         montantTotalHT=montantTotalHT+montantTTC
         if contrat_data['equipements'][i]['poids']:
