@@ -5,23 +5,24 @@ from fpdf import FPDF
 from datetime import *
 
 contrat=Blueprint("contrat", __name__)
+#id_contrat=90046097
+#API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id=90046140"
 
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
     id_contrat= request.args.get('contrat')
-    API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+id_contrat
+    API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
     contrat_data_response= requests.get(API_CONTRAT)
     contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
-    URL_CLIENT="https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client_idclient'])
+    URL_CLIENT="https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient'])
     facture_adresse_response= requests.get(URL_CLIENT)
     facture_adresse= json.loads(facture_adresse_response.content.decode('utf-8'))
-    #data = json.loads(request.args.get('text'))
     pdf = FPDF()
     pdf.add_page()
     epw = pdf.w - 2*pdf.l_margin
     th = pdf.font_size
     pdf.set_fill_color(220)
-    date_creation=date.fromisoformat(contrat_data['datecreaclient'])
+    date_creation=date.fromisoformat(contrat_data['datedebcont'])
     date_livraison=date.fromisoformat(contrat_data['datelivraison'])
     date_retour=date.fromisoformat(contrat_data['dateretour'])
     montantTotalHT=0
@@ -45,15 +46,15 @@ def contrat_pdf():
     pdf.multi_cell(epw/2.3, th, str(facture_adresse['raisonsocial'])+'\n'+
     str(facture_adresse['adresses'][1]['STREET_NUMBER']+" "+facture_adresse['adresses'][1]['ROUTE']+ " " +facture_adresse['adresses'][1]['ville'])+'\n'+
     str(facture_adresse['adresses'][1]['codepostal'])+"    "+facture_adresse['adresses'][1]['ville']+'\n'+
-    "Contact : "+str(facture_adresse['contactes'][0]['civilite'])+ " " +facture_adresse['contactes'][0]['prenom']+ " " +facture_adresse['contactes'][0]['nom']+'\n'+
+    "Contact : "+str(facture_adresse['contactes'][0]['civilite'])+ " " +str(facture_adresse['contactes'][0]['prenom'])+ " " +str(facture_adresse['contactes'][0]['nom'])+'\n'+
     "Tel : "+str(facture_adresse['contactes'][0]['telmobile']), border=1)
     #Replace le positionnement du curseur coin supérieur droit de la cellule créée
     pdf.set_xy(tmpVarX+100,tmpVarY)
-    pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client_idclient'])+'\n'+
+    pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'])+'\n'+
     str(facture_adresse['raisonsocial'])+'\n'+
-    facture_adresse['adresses'][0]['STREET_NUMBER']+ " " +facture_adresse['adresses'][0]['ROUTE']+'\n'+
-    str(facture_adresse['adresses'][0]['codepostal'])+ " " +facture_adresse['adresses'][0]['ville']+'\n\n'
-    "Demandé par : "+str(facture_adresse['contactes'][0]['civilite'])+ " " +facture_adresse['contactes'][0]['prenom']+ " " +facture_adresse['contactes'][0]['nom']+'\n'+
+    str(facture_adresse['adresses'][0]['STREET_NUMBER'])+ " " +str(facture_adresse['adresses'][0]['ROUTE'])+'\n'+
+    str(facture_adresse['adresses'][0]['codepostal'])+ " " +facture_adresse['adresses'][0]['ville']+'\n\n'+
+    "Demandé par : "+str(facture_adresse['contactes'][0]['civilite'])+ " " +str(facture_adresse['contactes'][0]['prenom'])+ " " +str(facture_adresse['contactes'][0]['nom'])+'\n'+
     "Tel : "+str(facture_adresse['contactes'][0]['telmobile'])+'\n'+
     "Fax : " ,border=1)
     pdf.ln(7)
