@@ -12,9 +12,9 @@ def contrat_pdf():
     API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
     contrat_data_response= requests.get(API_CONTRAT)
     contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
-    URL_CLIENT="https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient'])
-    facture_adresse_response= requests.get(URL_CLIENT)
-    facture_adresse= json.loads(facture_adresse_response.content.decode('utf-8'))
+    if contrat_data['client']!=False:
+      client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
+      client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
     pdf = FPDF()
     pdf.add_page()
     epw = pdf.w - 2*pdf.l_margin
@@ -28,22 +28,8 @@ def contrat_pdf():
     prix_services=0
     totalTVA=0.0
     adresse_chantier=""
-    adresse_facturation=0
-    adresse=0
     frais_financier=contrat_data['fraisfinancier'] if contrat_data['fraisfinancier'] != None else 0
-    
-    #boucle sur l'adrsse de client
-    for i in range(len(facture_adresse['adresses'])):
-          if facture_adresse['adresses'][i]['type']=="chantier":
-              for j in range(len(contrat_data['contacts'])):
-                if facture_adresse['adresses'][i]['idadresse']==contrat_data['contacts'][j]['adresse_idadresse']:
-                  adresse_chantier=facture_adresse['adresses'][i]
-                  contact_chantier=contrat_data['contacts'][j]        
-          else:
-           for j in range(len(contrat_data['contacts'])):
-                if facture_adresse['adresses'][i]['idadresse']==contrat_data['contacts'][j]['adresse_idadresse']:
-                  adresse_facture=facture_adresse['adresses'][i]
-                  contact_facture=contrat_data['contacts'][j]
+ 
     #logo------------------------------------
     pdf.image("./logo.png", 75, 8, 60)
     pdf.set_font('Times','',10.0) 
@@ -57,21 +43,48 @@ def contrat_pdf():
     ""+ "Suivi par : "+contrat_data['commercial'],  border=1)
     pdf.ln(1)
     pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
-    pdf.ln(8)
-    pdf.multi_cell(epw/2.3, th, str(adresse_chantier['TITRE'])+'\n'+
-    str(adresse_chantier['STREET_NUMBER']+" "+adresse_chantier['ROUTE'] )+'\n'+
-    str(adresse_chantier['codepostal'])+"    "+adresse_chantier['ville']+'\n'+
-    "Contact : "+str(contact_chantier['civilite'])+ " " +str(contact_chantier['prenom'])+ " " +str(contact_chantier['nom'])+'\n'+
-    "Tel : "+str(contact_chantier['telmobile']), border=1)
-  
-    pdf.set_xy(tmpVarX+100,tmpVarY)
-    pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'])+'\n'+
-    str(facture_adresse['raisonsocial'])+'\n'+
-    str(adresse_facture['STREET_NUMBER'])+ " " +str(adresse_facture['ROUTE'])+'\n'+
-    str(adresse_facture['codepostal'])+ " " +adresse_facture['ville']+'\n\n'+
-    "Demandé par : "+str(contact_facture['civilite'])+ " " +str(contact_facture['prenom'])+ " " +str(contact_facture['nom'])+'\n'+
-    "Tel : "+str(contact_facture['telmobile'])+'\n'+
-    "Fax : " ,border=1)
+    pdf.ln(8)  
+    if contrat_data['contacts']:
+    #boucle sur l'adrsse de client
+      for i in range(len(contrat_data['contacts'])):  
+                for j in range(len(client_adresse['adresses'])):
+                  #if client_adresse['adresses'][j]['type']=="chantier":
+                  if client_adresse['adresses'][j]['idadresse']==contrat_data['contacts'][i]['adresse_idadresse']:
+                    adresse_chantier=client_adresse['adresses'][j]
+                    contact_chantier=contrat_data['contacts'][j]        
+                  else:
+                    for j in range(len(client_adresse['adresses'])):
+                        if client_adresse['adresses'][j]['idadresse']==contrat_data['contacts'][j]['adresse_idadresse']:
+                          adresse_facture=client_adresse['adresses'][i]
+                          contact_facture=contrat_data['contacts'][j]
+
+      pdf.multi_cell(epw/2.3, th, str(adresse_chantier['TITRE'])+'\n'+
+      str(adresse_chantier['STREET_NUMBER']+" "+adresse_chantier['ROUTE'] )+'\n'+
+      str(adresse_chantier['codepostal'])+"    "+adresse_chantier['ville']+'\n'+
+      "Contact : "+str(contact_chantier['civilite'])+ " " +str(contact_chantier['prenom'])+ " " +str(contact_chantier['nom'])+'\n'+
+      "Tel : "+str(contact_chantier['telmobile']), border=1)
+    
+      pdf.set_xy(tmpVarX+100,tmpVarY)
+      pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'] if contrat_data['client']!=False else "")+'\n'+
+      str(client_adresse['raisonsocial'])+'\n'+
+      str(adresse_facture['STREET_NUMBER'])+ " " +str(adresse_facture['ROUTE'])+'\n'+
+      str(adresse_facture['codepostal'])+ " " +adresse_facture['ville']+'\n\n'+
+      "Demandé par : "+str(contact_facture['civilite'])+ " " +str(contact_facture['prenom'])+ " " +str(contact_facture['nom'])+'\n'+
+      "Tel : "+str(contact_facture['telmobile'])+'\n'+
+      "Fax : " ,border=1)
+    else:        
+      pdf.multi_cell(epw/2.3, th, '\n'+'\n'+'\n'+
+      "Contact : "+""+ " " +""+ " " +""+'\n'+
+      "Tel : "+"", border=1)
+    
+      pdf.set_xy(tmpVarX+100,tmpVarY)
+      pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'] if contrat_data['client']!=False else "")+'\n'+
+      ""+'\n'+
+      ""+ " " +""+'\n'+
+      ""+ " " +""+'\n\n'+
+      "Demandé par : "+""+ " " +""+ " " +""+'\n'+
+      "Tel : "+""+'\n'+
+      "Fax : " ,border=1)
     pdf.ln(7)
     tmpVarX = pdf.get_x()
     tmpVarY = pdf.get_y()
@@ -192,7 +205,7 @@ def contrat_pdf():
     pdf.cell(epw/5, 2*th,  txt="Tel : 05.53.48.32.94", align='C')
     pdf.cell(epw/5, 2*th,  txt="Tel : 04.90.87.18.08", align='C')
     pdf.ln(th*2)
-    pdf.set_font('Arial','I',10) 
+    pdf.set_font('Arial','I',10)  
     pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
     response = make_response(pdf.output(dest='S'))
     response.headers.set('Content-Type', 'application/pdf')
