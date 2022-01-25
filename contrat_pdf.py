@@ -35,6 +35,7 @@ def contrat_pdf():
     pdf.set_font('Times','',10.0) 
     pdf.ln(20)
     type_document="Contrat N° : " if contrat_data['statutcont'] != "Brouillon" else "Devis N° : "
+    filename="contrat-"+str(contrat_data['idcontrat']) if contrat_data['statutcont'] != "Brouillon" else "devis-"+str(contrat_data['idcontrat'])
     pdf.ln(4*th)
     #header---------------------------------------------
     tmpVarX = pdf.get_x()
@@ -208,6 +209,7 @@ def contrat_pdf():
     pdf.set_font('Arial','I',10)  
     pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
     response = make_response(pdf.output(dest='S'))
+    response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
     response.headers.set('Content-Type', 'application/pdf')
     return response
 
