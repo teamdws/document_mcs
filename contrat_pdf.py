@@ -9,11 +9,11 @@ contrat=Blueprint("contrat", __name__)
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
     id_contrat= request.args.get('contrat')
-    API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
+    API_CONTRAT = "https://applocation.directwebsolutions.fr/contrat?id="+str(id_contrat)
     contrat_data_response= requests.get(API_CONTRAT)
     contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
     if contrat_data['client']!=False:
-      client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
+      client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/client?id="+str(contrat_data['client']['idclient']))
       client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
     pdf = FPDF()
     pdf.add_page()
