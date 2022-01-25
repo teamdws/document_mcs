@@ -27,7 +27,10 @@ def contrat_pdf():
     poids_equipement=0
     prix_services=0
     totalTVA=0.0
-    adresse_chantier=""
+    adresse_chantier=[]
+    adresse_facturation=[]
+    contact_facturation=[]
+    contact_chantier=[]
     frais_financier=contrat_data['fraisfinancier'] if contrat_data['fraisfinancier'] != None else 0
  
     #logo------------------------------------
@@ -42,42 +45,49 @@ def contrat_pdf():
     tmpVarY = pdf.get_y()
     pdf.multi_cell(epw/2.3, th,type_document+str(contrat_data['idcontrat'])+" Date : "+str(date_creation.strftime("%d/%m/%y"))+'\n'
     ""+ "Suivi par : "+contrat_data['commercial'],  border=1)
-    pdf.ln(1)
-    pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
-    pdf.ln(8)  
-    if contrat_data['contacts']:
-    #boucle sur l'adrsse de client
-      for i in range(len(contrat_data['contacts'])):  
+    pdf.ln(1) 
+    if contrat_data['contacts'] and client_adresse:
+    #parcour les contacts dans un contrat
+      for i in range(len(contrat_data['contacts'])): 
+                #parcourir les adresses du client  
                 for j in range(len(client_adresse['adresses'])):
                   #if client_adresse['adresses'][j]['type']=="chantier":
                   if client_adresse['adresses'][j]['idadresse']==contrat_data['contacts'][i]['adresse_idadresse']:
-                    adresse_chantier=client_adresse['adresses'][j]
-                    contact_chantier=contrat_data['contacts'][j]        
-                  else:
-                    for j in range(len(client_adresse['adresses'])):
-                        if client_adresse['adresses'][j]['idadresse']==contrat_data['contacts'][j]['adresse_idadresse']:
-                          adresse_facture=client_adresse['adresses'][i]
-                          contact_facture=contrat_data['contacts'][j]
+                    if client_adresse['adresses'][j]['type']=="chantier":
+                      adresse_chantier=client_adresse['adresses'][j]
+                    else:
+                      adresse_facturation=client_adresse['adresses'][j]
+                #parcourir les contacts du client  
+                for k in range(len(client_adresse['contactes'])):
+                  #if client_adresse['adresses'][j]['type']=="chantier":
+                  if client_adresse['contactes'][k]['idcontact']==contrat_data['contacts'][i]['idcontact']:
+                    if client_adresse['contactes'][k]['typecontact']=="chantier":
+                      contact_chantier=client_adresse['contactes'][k]      
+                    else:
+                      contact_facturation=client_adresse['contactes'][k]
 
-      pdf.multi_cell(epw/2.3, th, str(adresse_chantier['TITRE'])+'\n'+
-      str(adresse_chantier['STREET_NUMBER']+" "+adresse_chantier['ROUTE'] )+'\n'+
-      str(adresse_chantier['codepostal'])+"    "+adresse_chantier['ville']+'\n'+
-      "Contact : "+str(contact_chantier['civilite'])+ " " +str(contact_chantier['prenom'])+ " " +str(contact_chantier['nom'])+'\n'+
-      "Tel : "+str(contact_chantier['telmobile']), border=1)
-    
+      pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
+      pdf.ln(8) 
+      pdf.multi_cell(epw/2.3, th, str(client_adresse['TITRE'] if adresse_chantier else "" )+'\n'+
+      str(adresse_chantier['STREET_NUMBER'] +" "+ adresse_chantier['ROUTE'] if adresse_chantier else "" )+'\n'+
+      str(adresse_chantier['codepostal'] +"    "+adresse_chantier['ville'] if adresse_chantier else "" )+'\n'
+      "Contact : "+str(contact_chantier['civilite']+ " " +contact_chantier['prenom']+ " " +contact_chantier['nom'] if contact_chantier else "") +'\n'+
+      "Tel : "+str(contact_chantier['telmobile'] if contact_chantier else "" ), border=1)
       pdf.set_xy(tmpVarX+100,tmpVarY)
-      pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'] if contrat_data['client']!=False else "")+'\n'+
+      pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'])+'\n'+
       str(client_adresse['raisonsocial'])+'\n'+
-      str(adresse_facture['STREET_NUMBER'])+ " " +str(adresse_facture['ROUTE'])+'\n'+
-      str(adresse_facture['codepostal'])+ " " +adresse_facture['ville']+'\n\n'+
-      "Demandé par : "+str(contact_facture['civilite'])+ " " +str(contact_facture['prenom'])+ " " +str(contact_facture['nom'])+'\n'+
-      "Tel : "+str(contact_facture['telmobile'])+'\n'+
+      str(adresse_facturation['STREET_NUMBER']+ " " +adresse_facturation['ROUTE'] if adresse_facturation else "" )+'\n'+
+      str(str(adresse_facturation['codepostal'])+ " " +adresse_facturation['ville'] if adresse_facturation else "" )+'\n\n'+
+      "Demandé par : "+str(contact_facturation['civilite']+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'] if adresse_facturation else "" )+'\n'+
+      "Tel : "+str(contact_facturation['telmobile'] if adresse_facturation else "") +'\n'+
       "Fax : " ,border=1)
-    else:        
+      pdf.ln(7)
+    else:    
+      pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
+      pdf.ln(8)     
       pdf.multi_cell(epw/2.3, th, '\n'+'\n'+'\n'+
       "Contact : "+""+ " " +""+ " " +""+'\n'+
       "Tel : "+"", border=1)
-    
       pdf.set_xy(tmpVarX+100,tmpVarY)
       pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'] if contrat_data['client']!=False else "")+'\n'+
       ""+'\n'+
