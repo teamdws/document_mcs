@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+import unicodedata
 from flask import Blueprint, make_response, request
 import  requests
 import  json
@@ -35,6 +38,7 @@ def contrat_pdf():
     adresse_facturation=[]
     contact_facturation=[]
     contact_chantier=[]
+    a=('EURO',chr(128));
     frais_financier=contrat_data['fraisfinancier'] if contrat_data['fraisfinancier'] != None else 0
  
     #logo------------------------------------
@@ -141,15 +145,15 @@ def contrat_pdf():
           pdf.set_font('Arial',size=8) 
           pdf.cell(113, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
           pdf.set_font('Arial','B',10) 
-          pdf.cell(  epw/10, 2*th, txt=str(round(montant_net,2)), align='C', border=1)
-          pdf.cell(  epw/11, 2*th, txt=str(round(montantTTC,2)), align='C', border=1)
+          pdf.cell(  epw/10, 2*th, txt=str(montant_net)+" "+chr(128), align='C', border=1)
+          pdf.cell(  epw/11, 2*th, txt=str(montantTTC)+" "+chr(128), align='C', border=1)
         else :
           pdf.cell(epw/15, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
           pdf.set_font('Arial',size=8) 
           pdf.cell(120, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
           pdf.set_font('Arial','B',10) 
-          pdf.cell(  epw/8, 2*th, txt=str(round(montant_net,2)), align='C', border=1)
-          pdf.cell(  epw/8, 2*th, txt=str(round(montantTTC,2)), align='C', border=1)
+          pdf.cell(  epw/8, 2*th, txt=str(montant_net)+" "+chr(128), align='C', border=1)
+          pdf.cell(  epw/8, 2*th, txt=str(montantTTC)+" "+chr(128), align='C', border=1)
         totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
         montantTotalHT=montantTotalHT+montantTTC
         if contrat_data['equipements'][i]['poids']:
@@ -183,15 +187,16 @@ def contrat_pdf():
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+120)
     pdf.cell(30, 2*th,fill=True, txt="Total HT :" , align="C",border=1)
-    pdf.cell(30, 2*th, str(montantTotalHT) ,border=1)
+    pdf.cell(30, 2*th, str(montantTotalHT)+" "+chr(128) ,border=1)
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+120)
     pdf.cell(30, 2*th, fill=True, txt="TVA :" , align="C",border=1)
-    pdf.cell(30, 2*th,str(round(totalTVA,2)),border=1)
+    pdf.cell(30, 2*th,str(totalTVA)+" "+chr(128),border=1)
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+120)
-    pdf.cell(30, 2*th,fill=True, txt="Total TTC :" , align="C",border=1)
-    pdf.cell(30, 2*th, str(round(montantTotalHT+float(frais_financier),2)) ,border=1)
+    texte="Total TTC  "
+    pdf.cell(30, 2*th,fill=True, txt=texte, align="C",border=1)
+    pdf.cell(30, 2*th, str(montantTotalHT+float(frais_financier))+" "+chr(128) ,border=1)
     pdf.ln(10)
     #mentions----------------------------------
     pdf.set_font('Arial','B',9) 
@@ -223,8 +228,7 @@ def contrat_pdf():
     pdf.set_font('Arial','I',10)  
     pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
     response = make_response(pdf.output(dest='S'))
-    response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
-    response.headers.set('Content-Type', 'application/pdf')
+    response.headers.set('Content-Type', 'application/pdf', filename=filename + '.pdf')
     return response
 
 if __name__ == '__main__': 
