@@ -7,16 +7,13 @@ from fpdf import FPDF
 from datetime import *
 
 contrat=Blueprint("contrat", __name__)
-
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
     id_contrat= request.args.get('contrat')
     #API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(id_contrat)
     API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
-    print (API_CONTRAT)
     contrat_data_response= requests.get(API_CONTRAT)
     contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
-    print (contrat_data)
     if contrat_data['client']!=False:
       #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
       client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
@@ -27,31 +24,29 @@ def contrat_pdf():
     th = pdf.font_size
     pdf.set_fill_color(220)
     date_creation=date.fromisoformat(contrat_data['datedebcont']) if contrat_data['statutcont'] != "Brouillon" else date.today()
-    date_debut=date.fromisoformat(contrat_data['datedebcont'])
-    date_fin=date.fromisoformat(contrat_data['datefincont'])
-    montantTotalHT=0
+    date_debut=date.fromisoformat(contrat_data['datedebcont']) if contrat_data['datedebcont'] != None else date.today()
+    date_fin=date.fromisoformat(contrat_data['datefincont']) if contrat_data['datefincont'] != None else date.today()
+    montantTotalHT=0.0
     poids_equipement=0
-    prix_services=0
     totalTVA=0.0
     adresse_chantier=[]
     adresse_facturation=[]
     contact_facturation=[]
     contact_chantier=[]
-    a=('EURO',chr(128));
     frais_financier=contrat_data['fraisfinancier'] if contrat_data['fraisfinancier'] != None else 0
  
     #logo------------------------------------
     pdf.image("./logo.png", 75, 8, 60)
     pdf.set_font('Times','',10.0) 
     pdf.ln(20)
-    type_document="Contrat N° : " if contrat_data['statutcont'] != "Brouillon" else "Devis N° : "
+    type_document="Contrat N° : " if contrat_data['statutcont'] != "Brouillon" else "Dévis N° : "
     filename="contrat-"+str(contrat_data['idcontrat']) if contrat_data['statutcont'] != "Brouillon" else "devis-"+str(contrat_data['idcontrat'])
     pdf.ln(4*th)
     #header---------------------------------------------
     tmpVarX = pdf.get_x()
     tmpVarY = pdf.get_y()
     pdf.multi_cell(epw/2.3, th,type_document+str(contrat_data['idcontrat'])+" Date : "+str(date_creation.strftime("%d/%m/%Y"))+'\n'
-    ""+ "Suivi par : "+contrat_data['commercial'],  border=1)
+    ""+ "Suivi par : "+ str(str(contrat_data['commercial']) if contrat_data['commercial']!=None else "" ),  border=1)
     pdf.ln(1) 
     if contrat_data['contacts'] and client_adresse:
     #parcour les contacts dans un contrat
@@ -79,14 +74,14 @@ def contrat_pdf():
       str(adresse_chantier['STREET_NUMBER'] +" "+ adresse_chantier['ROUTE'] if adresse_chantier else "" )+'\n'+
       str(str(adresse_chantier['codepostal']) +"    "+str(adresse_chantier['ville']) if adresse_chantier else "" )+'\n'
       "Contact : "+str(contact_chantier['civilite']+ " " +contact_chantier['prenom']+ " " +contact_chantier['nom'] if contact_chantier else "") +'\n'+
-      "Tel : "+str(contact_chantier['telmobile'] if contact_chantier else "" ), border=1)
+      "Tél : "+str(contact_chantier['telmobile'] if contact_chantier else "" ), border=1)
       pdf.set_xy(tmpVarX+100,tmpVarY)
       pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'])+'\n'+
       str(client_adresse['raisonsocial'])+'\n'+
       str(adresse_facturation['STREET_NUMBER']+ " " +adresse_facturation['ROUTE'] if adresse_facturation else "" )+'\n'+
       str(str(adresse_facturation['codepostal'])+ " " +adresse_facturation['ville'] if adresse_facturation else "" )+'\n\n'+
       "Demandé par : "+str(contact_facturation['civilite']+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'] if adresse_facturation else "" )+'\n'+
-      "Tel : "+str(contact_facturation['telmobile'] if adresse_facturation else "") +'\n'+
+      "Tél : "+str(contact_facturation['telmobile'] if adresse_facturation else "") +'\n'+
       "Fax : " ,border=1)
       pdf.ln(7)
     else:    
@@ -94,14 +89,14 @@ def contrat_pdf():
       pdf.ln(8)     
       pdf.multi_cell(epw/2.3, th, '\n'+'\n'+'\n'+
       "Contact : "+""+ " " +""+ " " +""+'\n'+
-      "Tel : "+"", border=1)
+      "Tél : "+"", border=1)
       pdf.set_xy(tmpVarX+100,tmpVarY)
-      pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'] if contrat_data['client']!=False else "")+'\n'+
+      pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(str(contrat_data['client_idclient']) if contrat_data['client_idclient']!=None else "")+'\n'+
       ""+'\n'+
       ""+ " " +""+'\n'+
       ""+ " " +""+'\n\n'+
       "Demandé par : "+""+ " " +""+ " " +""+'\n'+
-      "Tel : "+""+'\n'+
+      "Tél : "+""+'\n'+
       "Fax : " ,border=1)
     pdf.ln(7)
     tmpVarX = pdf.get_x()
@@ -109,7 +104,7 @@ def contrat_pdf():
     pdf.multi_cell(epw/2.3, th, "Date debut contrat : "+str(date_debut.strftime("%d/%m/%Y"))+'\n'+
     "Date fin contrat : "+str(date_fin.strftime("%d/%m/%Y"))+'\n'+
     "Période de location : "+str(contrat_data['nbdays'])+" Jours"+'\n'+
-    "Type Facturation  : "+str(contrat_data['frequencefacturation'])+"  mois"
+    "Facturation sur : "+str(str(contrat_data['frequencefacturation']) if contrat_data['frequencefacturation']!=None else "")+"  mois"
     ,border=1)
     pdf.set_xy(tmpVarX+100,tmpVarY)
     pdf.multi_cell(epw/2.3, th,"Nos tarifs sont dégressifs, la valeur des prix varie\n"
@@ -133,31 +128,32 @@ def contrat_pdf():
     pdf.ln(2*th)  
     #for i in range(len(contrat_data['services'])):
             #prix_services=prix_services+contrat_data['services'][i]['prix']
-    for i in range(len(contrat_data['equipements'])):
-          
-        montant_net=float(contrat_data['equipements'][i]['prix'])
-        montantTTC=(int(contrat_data['equipements'][i]['Qte'])*int(contrat_data['nbdays']))*float(contrat_data['equipements'][i]['prix'])-float(contrat_data['equipements'][i]['remise'])
-        pdf.set_font('Arial','B',10) 
-        if contrat_data['statutcont'] != "Brouillon":
-          pdf.cell(epw/30, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
-          pdf.cell(epw/7, 2*th, txt=str(contrat_data['equipements'][i]['reference']),align='C', border=1)
-          pdf.set_font('Arial',size=8) 
-          pdf.cell(113, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
-          pdf.set_font('Arial','B',10) 
-          pdf.cell(  epw/10, 2*th, txt=str(montant_net)+" "+chr(128), align='C', border=1)
-          pdf.cell(  epw/11, 2*th, txt=str(montantTTC)+" "+chr(128), align='C', border=1)
-        else :
-          pdf.cell(epw/15, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
-          pdf.set_font('Arial',size=8) 
-          pdf.cell(120, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
-          pdf.set_font('Arial','B',10) 
-          pdf.cell(  epw/8, 2*th, txt=str(montant_net)+" "+chr(128), align='C', border=1)
-          pdf.cell(  epw/8, 2*th, txt=str(montantTTC)+" "+chr(128), align='C', border=1)
-        totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
-        montantTotalHT=montantTotalHT+montantTTC
-        if contrat_data['equipements'][i]['poids']:
-          poids_equipement=poids_equipement+float(contrat_data['equipements'][i]['poids'])          
-        pdf.ln(2*th) 
+    if len(contrat_data['equipements'])>=0:
+        for i in range(len(contrat_data['equipements'])):
+              
+            montant_net=float(contrat_data['equipements'][i]['prix'])
+            montantTTC=(int(contrat_data['equipements'][i]['Qte'])*int(contrat_data['nbdays']))*float(contrat_data['equipements'][i]['prix'])-float(contrat_data['equipements'][i]['remise'])
+            pdf.set_font('Arial','B',10) 
+            if contrat_data['statutcont'] != "Brouillon":
+              pdf.cell(epw/30, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
+              pdf.cell(epw/7, 2*th, txt=str(contrat_data['equipements'][i]['reference']),align='C', border=1)
+              pdf.set_font('Arial',size=8) 
+              pdf.cell(113, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
+              pdf.set_font('Arial','B',10) 
+              pdf.cell(  epw/10, 2*th, txt=str(montant_net)+" "+chr(128), align='C', border=1)
+              pdf.cell(  epw/11, 2*th, txt=str(montantTTC)+" "+chr(128), align='C', border=1)
+            else :
+              pdf.cell(epw/15, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
+              pdf.set_font('Arial',size=8) 
+              pdf.cell(120, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
+              pdf.set_font('Arial','B',10) 
+              pdf.cell(  epw/8, 2*th, txt=str(montant_net)+" "+chr(128), align='C', border=1)
+              pdf.cell(  epw/8, 2*th, txt=str(montantTTC)+" "+chr(128), align='C', border=1)
+            totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
+            montantTotalHT=montantTotalHT+montantTTC
+            if contrat_data['equipements'][i]['poids']:
+              poids_equipement=poids_equipement+float(contrat_data['equipements'][i]['poids'])          
+            pdf.ln(2*th) 
     #footer----------------------------------------------------------------
     pdf.set_y(185)
     pdf.set_font('Arial',size=8) 
@@ -194,7 +190,7 @@ def contrat_pdf():
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+120)
     pdf.cell(30, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
-    pdf.cell(30, 2*th, str(montantTotalHT+float(frais_financier))+" "+chr(128) ,border=1)
+    pdf.cell(30, 2*th, str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) ,border=1)
     pdf.ln(10)
     #mentions----------------------------------
     pdf.set_font('Arial','B',9) 
@@ -217,14 +213,15 @@ def contrat_pdf():
     pdf.cell(epw/4, 2*th,  txt="Z.A. de Trignac 47240 Castelculier", align='L')
     pdf.cell(epw/5, 2*th,  txt="MIN BAT.3 84000 Avignon", align='R')
     pdf.ln(th)
-    pdf.cell(epw/5, 2*th,  txt="Tel : 01.43.89.06.00", align='C')
-    pdf.cell(epw/5, 2*th,  txt="Tel : 04.37.58.44.26", align='C')
-    pdf.cell(epw/5, 2*th,  txt="Tel : 01.60.09.81.31", align='C')
-    pdf.cell(epw/5, 2*th,  txt="Tel : 05.53.48.32.94", align='C')
-    pdf.cell(epw/5, 2*th,  txt="Tel : 04.90.87.18.08", align='C')
+    pdf.cell(epw/5, 2*th,  txt="Tél : 01.43.89.06.00", align='C')
+    pdf.cell(epw/5, 2*th,  txt="Tél : 04.37.58.44.26", align='C')
+    pdf.cell(epw/5, 2*th,  txt="Tél : 01.60.09.81.31", align='C')
+    pdf.cell(epw/5, 2*th,  txt="Tél : 05.53.48.32.94", align='C')
+    pdf.cell(epw/5, 2*th,  txt="Tél : 04.90.87.18.08", align='C')
     pdf.ln(th*2)
-    pdf.set_font('Arial','I',10)  
+    pdf.set_font('Arial','I',8)  
     #pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
+    #pdf.line(10, 30, 110, 30)
     pdf.multi_cell(190, 5, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
     response = make_response(pdf.output(dest='S'))
     response.headers.set('Content-Type', 'application/pdf', filename=filename + '.pdf')
