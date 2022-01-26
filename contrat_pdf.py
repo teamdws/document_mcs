@@ -42,9 +42,9 @@ def contrat_pdf():
     pdf.ln(20)
     type_document="Contrat N° : " if contrat_data['statutcont'] != "Brouillon" else "Devis N° : "
     if contrat_data['statutcont'] != "Brouillon":
-      filename="contrat_"+str(contrat_data['idcontrat'])+"_"+str(client_adresse['raisonsocial'] if client_adresse['raisonsocial']!=None else "" )+"_"+str(date.today().strftime("%d/%m/%Y"))
+      filename="contrat_"+str(contrat_data['idcontrat'])+"_"+str(str(client_adresse['raisonsocial']) if contrat_data['client']!=False else "" )+"_"+str(date.today().strftime("%d/%m/%Y"))
     else:
-           filename="devis_"+str(contrat_data['idcontrat'])+"_"+str(client_adresse['raisonsocial'] if client_adresse['raisonsocial']!=None else "" )+"_"+str(date.today().strftime("%d/%m/%Y"))
+           filename="devis_"+str(contrat_data['idcontrat'])+"_"+str(str(client_adresse['raisonsocial']) if  contrat_data['client']!=False else "" )+"_"+str(date.today().strftime("%d/%m/%Y"))
     pdf.ln(4*th)
     #header---------------------------------------------
     tmpVarX = pdf.get_x()
