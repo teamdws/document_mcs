@@ -175,20 +175,15 @@ def contrat_pdf():
             totalTVA=float(totalTVA+(montantTTC_service*(float(contrat_data['services'][i]['tva'])/100)))
             montantTotalHT=montantTotalHT+montantTTC_service         
             pdf.ln(2*th) 
-    #footer----------------------------------------------------------------
-    pdf.set_y(185)
+    #pdf.set_y(175)
+    pdf.ln(5)
     pdf.set_font('Arial',size=8) 
-    pdf.cell(100, 2*th, "Un transport à vide sera facturé en cas de passage inutile dû aux éventuelles prolongations.")
-    pdf.ln(3) 
-    pdf.cell(100, 2*th,"Merci de prévenir à l'avance afin d'éviter ce coût supplémentaire.")
-    pdf.ln(3) 
-    pdf.cell(100, 2*th,"Une indemnité forfaitaire de 40.00 euros est due au créancier en cas de retard de paiement.")
-    pdf.ln(3) 
-    pdf.cell(100, 2*th,"Le locataire déclare avoir pris connaissance des conditions générales de location et de")
-    pdf.ln(3) 
-    pdf.cell(100, 2*th,"les accepter sans réserves (LE CLIENT DECLARE AVOIR PRIS CONNAISSANCE DES CONDITIONS).")
-    pdf.ln(3) 
-    pdf.cell(100, 2*th,"Nous vous rappelons que les réservations sont seulement valables après acceptation de ce contrat.")
+     #mentions-----------------------------------------------------
+    if len(contrat_data['mentions'])>=0:
+         for i in range(len(contrat_data['mentions'])):
+            pdf.multi_cell(190, th, str(contrat_data['mentions'][i]['contenuoption']).replace("€", chr(128)))
+            pdf.ln(1) 
+    pdf.multi_cell(100, 2*th)
     pdf.cell(60) 
     pdf.cell(10, 2*th,"Poids (Kg) :       "+str(poids_equipement))
     pdf.ln(2*th)
@@ -243,7 +238,7 @@ def contrat_pdf():
     pdf.set_font('Arial','I',8)  
     #pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
     #pdf.line(10, 30, 110, 30)
-    pdf.multi_cell(190, 5, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
+    pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
     response = make_response(pdf.output(dest='S'))
     response.headers.set('Content-Type', 'application/pdf', filename=filename + '.pdf')
     return response
