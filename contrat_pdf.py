@@ -131,7 +131,7 @@ def contrat_pdf():
     for i in range(len(contrat_data['equipements'])):
           
         montant_net=float(contrat_data['equipements'][i]['prix'])
-        montantTTC=(contrat_data['equipements'][i]['Qte']*int(contrat_data['nbdays']))*float(contrat_data['equipements'][i]['prix'])-float(contrat_data['equipements'][i]['remise'])
+        montantTTC=(int(contrat_data['equipements'][i]['Qte'])*int(contrat_data['nbdays']))*float(contrat_data['equipements'][i]['prix'])-float(contrat_data['equipements'][i]['remise'])
         pdf.set_font('Arial','B',10) 
         if contrat_data['statutcont'] != "Brouillon":
           pdf.cell(epw/30, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
