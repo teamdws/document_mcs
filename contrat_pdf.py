@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import unicodedata
 from flask import Blueprint, make_response, request
 import  requests
 import  json
@@ -51,7 +50,7 @@ def contrat_pdf():
     #header---------------------------------------------
     tmpVarX = pdf.get_x()
     tmpVarY = pdf.get_y()
-    pdf.multi_cell(epw/2.3, th,type_document+str(contrat_data['idcontrat'])+" Date : "+str(date_creation.strftime("%d/%m/%y"))+'\n'
+    pdf.multi_cell(epw/2.3, th,type_document+str(contrat_data['idcontrat'])+" Date : "+str(date_creation.strftime("%d/%m/%Y"))+'\n'
     ""+ "Suivi par : "+contrat_data['commercial'],  border=1)
     pdf.ln(1) 
     if contrat_data['contacts'] and client_adresse:
@@ -107,8 +106,8 @@ def contrat_pdf():
     pdf.ln(7)
     tmpVarX = pdf.get_x()
     tmpVarY = pdf.get_y()
-    pdf.multi_cell(epw/2.3, th, "Date debut contrat : "+str(date_debut.strftime("%d/%m/%y"))+'\n'+
-    "Date fin contrat : "+str(date_fin.strftime("%d/%m/%y"))+'\n'+
+    pdf.multi_cell(epw/2.3, th, "Date debut contrat : "+str(date_debut.strftime("%d/%m/%Y"))+'\n'+
+    "Date fin contrat : "+str(date_fin.strftime("%d/%m/%Y"))+'\n'+
     "Période de location : "+str(contrat_data['nbdays'])+" Jours"+'\n'+
     "Type Facturation  : "+str(contrat_data['frequencefacturation'])+"  mois"
     ,border=1)
@@ -194,8 +193,7 @@ def contrat_pdf():
     pdf.cell(30, 2*th,str(totalTVA)+" "+chr(128),border=1)
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+120)
-    texte="Total TTC  "
-    pdf.cell(30, 2*th,fill=True, txt=texte, align="C",border=1)
+    pdf.cell(30, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
     pdf.cell(30, 2*th, str(montantTotalHT+float(frais_financier))+" "+chr(128) ,border=1)
     pdf.ln(10)
     #mentions----------------------------------
