@@ -9,11 +9,13 @@ contrat=Blueprint("contrat", __name__)
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
     id_contrat= request.args.get('contrat')
-    API_CONTRAT = "https://applocation.directwebsolutions.fr/contrat?id="+str(id_contrat)
+    API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
+    print (API_CONTRAT)
     contrat_data_response= requests.get(API_CONTRAT)
     contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
+    print (contrat_data)
     if contrat_data['client']!=False:
-      client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/client?id="+str(contrat_data['client']['idclient']))
+      client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
       client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
     pdf = FPDF()
     pdf.add_page()
@@ -68,9 +70,9 @@ def contrat_pdf():
 
       pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
       pdf.ln(8) 
-      pdf.multi_cell(epw/2.3, th, str(client_adresse['TITRE'] if adresse_chantier else "" )+'\n'+
+      pdf.multi_cell(epw/2.3, th, str(adresse_chantier['TITRE'] if adresse_chantier else "" )+'\n'+
       str(adresse_chantier['STREET_NUMBER'] +" "+ adresse_chantier['ROUTE'] if adresse_chantier else "" )+'\n'+
-      str(adresse_chantier['codepostal'] +"    "+adresse_chantier['ville'] if adresse_chantier else "" )+'\n'
+      str(str(adresse_chantier['codepostal']) +"    "+str(adresse_chantier['ville']) if adresse_chantier else "" )+'\n'
       "Contact : "+str(contact_chantier['civilite']+ " " +contact_chantier['prenom']+ " " +contact_chantier['nom'] if contact_chantier else "") +'\n'+
       "Tel : "+str(contact_chantier['telmobile'] if contact_chantier else "" ), border=1)
       pdf.set_xy(tmpVarX+100,tmpVarY)
@@ -124,8 +126,8 @@ def contrat_pdf():
       pdf.cell(  epw/8, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
     
     pdf.ln(2*th)  
-    for i in range(len(contrat_data['services'])):
-            prix_services=prix_services+contrat_data['services'][i]['prix']
+    #for i in range(len(contrat_data['services'])):
+            #prix_services=prix_services+contrat_data['services'][i]['prix']
     for i in range(len(contrat_data['equipements'])):
           
         montant_net=float(contrat_data['equipements'][i]['prix'])
