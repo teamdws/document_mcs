@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import decimal
 from flask import Blueprint, make_response, request
 import  requests
 import  json
@@ -124,13 +125,9 @@ def contrat_pdf():
       pdf.cell(  120, 2*th, fill=True, txt="Description",align='C', border=1)
       pdf.cell(  epw/8, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
       pdf.cell(  epw/8, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
-    
     pdf.ln(2*th)  
-    #for i in range(len(contrat_data['services'])):
-            #prix_services=prix_services+contrat_data['services'][i]['prix']
     if len(contrat_data['equipements'])>=0:
-        for i in range(len(contrat_data['equipements'])):
-              
+        for i in range(len(contrat_data['equipements'])):      
             montant_net=float(contrat_data['equipements'][i]['prix'])
             montantTTC=(int(contrat_data['equipements'][i]['Qte'])*int(contrat_data['nbdays']))*float(contrat_data['equipements'][i]['prix'])-float(contrat_data['equipements'][i]['remise'])
             pdf.set_font('Arial','B',10) 
@@ -153,6 +150,30 @@ def contrat_pdf():
             montantTotalHT=montantTotalHT+montantTTC
             if contrat_data['equipements'][i]['poids']:
               poids_equipement=poids_equipement+float(contrat_data['equipements'][i]['poids'])          
+            pdf.ln(2*th) 
+    #output services
+    if len(contrat_data['services'])>=0:
+     for i in range(len(contrat_data['services'])):
+            montant_net_service=float(contrat_data['services'][i]['prix'])
+            montantTTC_service=(int(contrat_data['services'][i]['Qte']))*float(contrat_data['services'][i]['prix'])-float(contrat_data['services'][i]['remise'])
+            pdf.set_font('Arial','B',10) 
+            if contrat_data['statutcont'] != "Brouillon":
+              pdf.cell(epw/30, 2*th, txt=str(contrat_data['services'][i]['Qte']),align='C', border=1)
+              pdf.cell(epw/7, 2*th, txt=str(contrat_data['services'][i]['idservice']),align='C', border=1)
+              pdf.set_font('Arial',size=8) 
+              pdf.cell(113, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
+              pdf.set_font('Arial','B',10) 
+              pdf.cell(  epw/10, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
+              pdf.cell(  epw/11, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1)
+            else :
+              pdf.cell(epw/15, 2*th, txt=str(contrat_data['services'][i]['Qte']),align='C', border=1)
+              pdf.set_font('Arial',size=8) 
+              pdf.cell(120, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
+              pdf.set_font('Arial','B',10) 
+              pdf.cell(  epw/8, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
+              pdf.cell(  epw/8, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1)
+            totalTVA=float(totalTVA+(montantTTC_service*(float(contrat_data['services'][i]['tva'])/100)))
+            montantTotalHT=montantTotalHT+montantTTC_service         
             pdf.ln(2*th) 
     #footer----------------------------------------------------------------
     pdf.set_y(185)
