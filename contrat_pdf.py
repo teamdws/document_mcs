@@ -40,8 +40,11 @@ def contrat_pdf():
     pdf.image("./logo.png", 75, 8, 60)
     pdf.set_font('Times','',10.0) 
     pdf.ln(20)
-    type_document="Contrat N° : " if contrat_data['statutcont'] != "Brouillon" else "Dévis N° : "
-    filename="contrat-"+str(contrat_data['idcontrat']) if contrat_data['statutcont'] != "Brouillon" else "devis-"+str(contrat_data['idcontrat'])
+    type_document="Contrat N° : " if contrat_data['statutcont'] != "Brouillon" else "Devis N° : "
+    if contrat_data['statutcont'] != "Brouillon":
+      filename="contrat_"+str(contrat_data['idcontrat'])+"_"+str(client_adresse['raisonsocial'] if client_adresse['raisonsocial']!=None else "" )+"_"+str(date.today().strftime("%d/%m/%Y"))
+    else:
+           filename="devis_"+str(contrat_data['idcontrat'])+"_"+str(client_adresse['raisonsocial'] if client_adresse['raisonsocial']!=None else "" )+"_"+str(date.today().strftime("%d/%m/%Y"))
     pdf.ln(4*th)
     #header---------------------------------------------
     tmpVarX = pdf.get_x()
@@ -137,15 +140,15 @@ def contrat_pdf():
               pdf.set_font('Arial',size=8) 
               pdf.cell(113, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
               pdf.set_font('Arial','B',10) 
-              pdf.cell(  epw/10, 2*th, txt=str(montant_net)+" "+chr(128), align='C', border=1)
-              pdf.cell(  epw/11, 2*th, txt=str(montantTTC)+" "+chr(128), align='C', border=1)
+              pdf.cell(  epw/10, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
+              pdf.cell(  epw/11, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
             else :
               pdf.cell(epw/15, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
               pdf.set_font('Arial',size=8) 
               pdf.cell(120, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
               pdf.set_font('Arial','B',10) 
-              pdf.cell(  epw/8, 2*th, txt=str(montant_net)+" "+chr(128), align='C', border=1)
-              pdf.cell(  epw/8, 2*th, txt=str(montantTTC)+" "+chr(128), align='C', border=1)
+              pdf.cell(  epw/8, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
+              pdf.cell(  epw/8, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
             totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
             montantTotalHT=montantTotalHT+montantTTC
             if contrat_data['equipements'][i]['poids']:
@@ -240,7 +243,8 @@ def contrat_pdf():
     #pdf.line(10, 30, 110, 30)
     pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
     response = make_response(pdf.output(dest='S'))
-    response.headers.set('Content-Type', 'application/pdf', filename=filename + '.pdf')
+    response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
+    response.headers.set('Content-Type', 'application/pdf')
     return response
 
 if __name__ == '__main__': 
