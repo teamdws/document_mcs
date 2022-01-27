@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-import decimal
 from flask import Blueprint, make_response, request
 import  requests
 import  json
@@ -19,7 +18,7 @@ def contrat_pdf():
       #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
       client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
       client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
-    pdf = FPDF()
+    pdf = FPDF('P', 'mm', 'A4' )
     pdf.add_page()
     epw = pdf.w - 2*pdf.l_margin
     th = pdf.font_size
@@ -53,11 +52,10 @@ def contrat_pdf():
     ""+ "Suivi par : "+ str(str(contrat_data['commercial']) if contrat_data['commercial']!=None else "" ),  border=1)
     pdf.ln(1) 
     if contrat_data['contacts'] and client_adresse:
-    #parcour les contacts dans un contrat
+    #affichage de contact et adresses-------------------------------------------------
       for i in range(len(contrat_data['contacts'])): 
                 #parcourir les adresses du client  
                 for j in range(len(client_adresse['adresses'])):
-                  #if client_adresse['adresses'][j]['type']=="chantier":
                   if client_adresse['adresses'][j]['idadresse']==contrat_data['contacts'][i]['adresse_idadresse']:
                     if client_adresse['adresses'][j]['type']=="chantier":
                       adresse_chantier=client_adresse['adresses'][j]
@@ -115,7 +113,7 @@ def contrat_pdf():
     "avant la date prévue par le contrat de location\n"
     "entrainera une revalorisation des prix à la hausse. ", border=1)
     pdf.ln(10)
-    #line of invoice--------------------------
+    #affichage line of contrat-------------------------------------------------------
     if contrat_data['statutcont'] != "Brouillon":
       pdf.cell(  epw/30, 2*th, fill=True, txt="Qté", align='C', border=1)
       pdf.cell(  epw/7, 2*th, fill=True, txt="Ref.",  align='C', border=1) 
@@ -128,23 +126,39 @@ def contrat_pdf():
       pdf.cell(  epw/8, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
       pdf.cell(  epw/8, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
     pdf.ln(2*th)  
+    #affichage des équipements si le tableau n'est pas vide------------------------------------
     if len(contrat_data['equipements'])>=0:
         for i in range(len(contrat_data['equipements'])):      
             montant_net=float(contrat_data['equipements'][i]['prix'])
             montantTTC=(int(contrat_data['equipements'][i]['Qte'])*int(contrat_data['nbdays']))*float(contrat_data['equipements'][i]['prix'])-float(contrat_data['equipements'][i]['remise'])
             pdf.set_font('Arial','B',10) 
-            if contrat_data['statutcont'] != "Brouillon":
-              pdf.cell(epw/30, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
-              pdf.cell(epw/7, 2*th, txt=str(str(contrat_data['equipements'][i]['reference']) if contrat_data['equipements'][i]['reference']!=None else ""),align='C', border=1)
-              pdf.set_font('Arial',size=8) 
-              pdf.cell(113, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
+            pdf.cell(epw/30, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
+           
+            if contrat_data['statutcont'] != "Brouillon":  #affichage de la colone ref s'il sagit d'un contrat
+              if contrat_data['equipements'][i]['reference']!=None:  #vérifier su la colone référence est renseignée oun pas
+                #parcourir le detail des équipements pour trouver la référence interne de chaque article 
+                if  contrat_data['equipements'][i]['serialisable']==1 and contrat_data['equipements'][i]['statut_preparation']==1:
+                    for k in range(len(contrat_data['detailequipements'])): 
+                      if contrat_data['equipements'][i]['equipement_idequipement']==contrat_data['detailequipements'][k]['equipement_idequipement']:
+                          pdf.cell(epw/7, 2*th, txt=str(contrat_data['detailequipements'][k]['refinterne']),align='C', border=1)
+                          break
+                elif contrat_data['equipements'][i]['serialisable']==1 and contrat_data['equipements'][i]['statut_preparation']!=1:
+                    pdf.cell(epw/7, 2*th, align='C', border=1) 
+                elif  contrat_data['equipements'][i]['serialisable']==0: pdf.cell(epw/7, 2*th, txt=str(contrat_data['equipements'][i]['reference']),align='C', border=1)
+              else:         
+                pdf.cell(epw/7, 2*th, txt=str(contrat_data['equipements'][i]['reference']),align='C', border=1)
+           
+              pdf.set_font('Arial',"B",size=6) 
+              tmpVarX = pdf.get_x()
+              tmpVarY = pdf.get_y()              
+              pdf.multi_cell(113,  3, txt=str(contrat_data['equipements'][i]['denomination']),align='A' )
+              pdf.set_xy(tmpVarX+113,tmpVarY)
               pdf.set_font('Arial','B',10) 
-              pdf.cell(  epw/10, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
+              pdf.cell(epw/10, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
               pdf.cell(  epw/11, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
             else :
-              pdf.cell(epw/15, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
               pdf.set_font('Arial',size=8) 
-              pdf.cell(120, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
+              pdf.multi_cell(120, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
               pdf.set_font('Arial','B',10) 
               pdf.cell(  epw/8, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
               pdf.cell(  epw/8, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
@@ -153,34 +167,25 @@ def contrat_pdf():
             if contrat_data['equipements'][i]['poids']:
               poids_equipement=poids_equipement+float(contrat_data['equipements'][i]['poids'])          
             pdf.ln(2*th) 
-    #output services
+    #affichage des services -------------------------------------------------
     if len(contrat_data['services'])>=0:
      for i in range(len(contrat_data['services'])):
-            montant_net_service=float(contrat_data['services'][i]['prix'])
-            montantTTC_service=(int(contrat_data['services'][i]['Qte']))*float(contrat_data['services'][i]['prix'])-float(contrat_data['services'][i]['remise'])
+            montant_net_service=float(contrat_data['services'][i]['prixdefautservice'])
+            montantTTC_service=float(contrat_data['services'][i]['prix'])
             pdf.set_font('Arial','B',10) 
-            if contrat_data['statutcont'] != "Brouillon":
-              pdf.cell(epw/30, 2*th, txt=str(contrat_data['services'][i]['Qte']),align='C', border=1)
-              pdf.cell(epw/7, 2*th, txt=str(contrat_data['services'][i]['idservice']),align='C', border=1)
-              pdf.set_font('Arial',size=8) 
-              pdf.cell(113, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
-              pdf.set_font('Arial','B',10) 
-              pdf.cell(  epw/10, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
-              pdf.cell(  epw/11, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1)
-            else :
-              pdf.cell(epw/15, 2*th, txt=str(contrat_data['services'][i]['Qte']),align='C', border=1)
-              pdf.set_font('Arial',size=8) 
-              pdf.cell(120, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
-              pdf.set_font('Arial','B',10) 
-              pdf.cell(  epw/8, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
-              pdf.cell(  epw/8, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1)
-            totalTVA=float(totalTVA+(montantTTC_service*(float(contrat_data['services'][i]['tva'])/100)))
+            pdf.cell(epw/30, 2*th, txt=str(contrat_data['services'][i]['Qte']),align='C', border=1)
+            pdf.cell(epw/7, 2*th, "",align='C', border=1)
+            pdf.set_font('Arial',size=8) 
+            pdf.cell(113, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
+            pdf.set_font('Arial','B',10) 
+            pdf.cell(  epw/10, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
+            pdf.cell(  epw/11, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1)
+            
             montantTotalHT=montantTotalHT+montantTTC_service         
             pdf.ln(2*th) 
-    #pdf.set_y(175)
+    #affichage mentions-----------------------------------------------------
     pdf.ln(5)
     pdf.set_font('Arial',size=8) 
-     #mentions-----------------------------------------------------
     if len(contrat_data['mentions'])>=0:
          for i in range(len(contrat_data['mentions'])):
             pdf.multi_cell(190, th, str(contrat_data['mentions'][i]['contenuoption']).replace("€", chr(128)))
@@ -189,6 +194,7 @@ def contrat_pdf():
     pdf.cell(60) 
     pdf.cell(10, 2*th,"Poids (Kg) :       "+str(poids_equipement))
     pdf.ln(2*th)
+    #affichage du footer---------------------------------------
     tmpVarX = pdf.get_x()
     tmpVarY = pdf.get_y()
     pdf.multi_cell(120, 4*th,"Fait à ______________________________________, Le _________________________"'\n'
@@ -242,7 +248,7 @@ def contrat_pdf():
     #pdf.line(10, 30, 110, 30)
     pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
     response = make_response(pdf.output(dest='S'))
-    response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
+    #response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
     response.headers.set('Content-Type', 'application/pdf')
     return response
 

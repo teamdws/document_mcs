@@ -1,4 +1,4 @@
-from flask import Blueprint, make_response
+from flask import Blueprint, make_response, request
 import  requests
 import  json
 from fpdf import FPDF
@@ -12,6 +12,15 @@ URL_ADRESSE="https://back-mcs-v1.herokuapp.com/web/client?id=223"
 
 @facture.route('pdf',methods = ['POST', 'GET'])
 def facture_pdf():
+    id_facture= request.args.get('facture')
+    #URL_FACTURE = "https://back-mcs-v1.herokuapp.com/web/facture?id="+str(id_contrat)
+    URL_FACTURE = "https://back-mcs-v1.herokuapp.com/web/facture?id="+str(id_facture)
+    facture_data_response= requests.get(URL_FACTURE)
+    facture_data= json.loads(facture_data_response.content.decode('utf-8'))
+    if contrat_data['client']!=False:
+      #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
+      client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
+      client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
     contrat_data_response= requests.get(API_CONTRAT)
     contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
     ligne_facture_response= requests.get(API_LIGNE_FACTURE)
@@ -35,7 +44,7 @@ def facture_pdf():
     type_document="Facture   " if facture['avoir'] == 0 else "Avoir   "
     frais_financier=float(facture['fraisfinancier']) if facture['fraisfinancier'] != None else 0
     #logo------------------------------------
-    pdf.image("./logo.jpg", 75, 8, 60)
+    pdf.image("./logo.png", 75, 8, 60)
     pdf.set_font('Times','',10.0) 
     pdf.ln(20)
     #header---------------------------------------------
