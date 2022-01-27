@@ -65,14 +65,13 @@ def contrat_pdf():
                       adresse_facturation=client_adresse['adresses'][j]
                 #parcourir les contacts du client  
                 for k in range(len(client_adresse['contactes'])):
-                  #if client_adresse['adresses'][j]['type']=="chantier":
                   if client_adresse['contactes'][k]['idcontact']==contrat_data['contacts'][i]['idcontact']:
-                    if client_adresse['contactes'][k]['typecontact']=="chantier":
+                    if client_adresse['contactes'][k]['type']=="chantier":
                       contact_chantier=client_adresse['contactes'][k]      
                     else:
                       contact_facturation=client_adresse['contactes'][k]
 
-      pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
+      pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation ", align="C", border=1)
       pdf.ln(8) 
       pdf.multi_cell(epw/2.3, th, str(adresse_chantier['TITRE'] if adresse_chantier else "" )+'\n'+
       str(adresse_chantier['STREET_NUMBER'] +" "+ adresse_chantier['ROUTE'] if adresse_chantier else "" )+'\n'+
@@ -84,8 +83,8 @@ def contrat_pdf():
       str(client_adresse['raisonsocial'])+'\n'+
       str(adresse_facturation['STREET_NUMBER']+ " " +adresse_facturation['ROUTE'] if adresse_facturation else "" )+'\n'+
       str(str(adresse_facturation['codepostal'])+ " " +adresse_facturation['ville'] if adresse_facturation else "" )+'\n\n'+
-      "Demandé par : "+str(contact_facturation['civilite']+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'] if adresse_facturation else "" )+'\n'+
-      "Tél : "+str(contact_facturation['telmobile'] if adresse_facturation else "") +'\n'+
+      "Demandé par : "+str(contact_facturation['civilite']+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'] if contact_facturation else "" )+'\n'+
+      "Tél : "+str(contact_facturation['telmobile'] if contact_facturation else "") +'\n'+
       "Fax : " ,border=1)
       pdf.ln(7)
     else:    
@@ -136,7 +135,7 @@ def contrat_pdf():
             pdf.set_font('Arial','B',10) 
             if contrat_data['statutcont'] != "Brouillon":
               pdf.cell(epw/30, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
-              pdf.cell(epw/7, 2*th, txt=str(contrat_data['equipements'][i]['reference']),align='C', border=1)
+              pdf.cell(epw/7, 2*th, txt=str(str(contrat_data['equipements'][i]['reference']) if contrat_data['equipements'][i]['reference']!=None else ""),align='C', border=1)
               pdf.set_font('Arial',size=8) 
               pdf.cell(113, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
               pdf.set_font('Arial','B',10) 
