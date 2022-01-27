@@ -77,15 +77,15 @@ def contrat_pdf():
       pdf.multi_cell(epw/2.3, th, str(adresse_chantier['TITRE'] if adresse_chantier else "" )+'\n'+
       str(adresse_chantier['STREET_NUMBER'] +" "+ adresse_chantier['ROUTE'] if adresse_chantier else "" )+'\n'+
       str(str(adresse_chantier['codepostal']) +"    "+str(adresse_chantier['ville']) if adresse_chantier else "" )+'\n'
-      "Contact : "+str(contact_chantier['civilite']+ " " +contact_chantier['prenom']+ " " +contact_chantier['nom'] if contact_chantier else "") +'\n'+
-      "Tél : "+str(contact_chantier['telmobile'] if contact_chantier else "" ), border=1)
+      "Contact : "+str(contact_facturation['civilite']+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'] if contact_facturation else "") +'\n'+
+      "Tél : "+str(contact_facturation['telmobile'] if contact_facturation else "" ), border=1)
       pdf.set_xy(tmpVarX+100,tmpVarY)
       pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'])+'\n'+
       str(client_adresse['raisonsocial'])+'\n'+
       str(adresse_facturation['STREET_NUMBER']+ " " +adresse_facturation['ROUTE'] if adresse_facturation else "" )+'\n'+
       str(str(adresse_facturation['codepostal'])+ " " +adresse_facturation['ville'] if adresse_facturation else "" )+'\n\n'+
-      "Demandé par : "+str(contact_facturation['civilite']+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'] if adresse_facturation else "" )+'\n'+
-      "Tél : "+str(contact_facturation['telmobile'] if adresse_facturation else "") +'\n'+
+      "Demandé par : "+str(contact_chantier['civilite']+ " " +contact_chantier['prenom']+ " " +contact_chantier['nom'] if contact_chantier else "" )+'\n'+
+      "Tél : "+str(contact_chantier['telmobile'] if contact_chantier else "") +'\n'+
       "Fax : " ,border=1)
       pdf.ln(7)
     else:    
