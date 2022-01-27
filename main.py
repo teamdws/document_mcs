@@ -10,9 +10,9 @@ app.register_blueprint(contrat, url_prefix="/contrat")
 app.register_blueprint(bon, url_prefix="/bon")
 
 
-@app.route("/")
-def home():
-    return "hello"
+#@app.route("/")
+#def home():
+ #   return "hello"
 
 if __name__ == '__main__':
   app.run(debug=True)
