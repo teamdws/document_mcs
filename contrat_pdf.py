@@ -137,14 +137,15 @@ def contrat_pdf():
             if contrat_data['statutcont'] != "Brouillon":  #affichage de la colone ref s'il sagit d'un contrat
               if contrat_data['equipements'][i]['reference']!=None:  #vérifier su la colone référence est renseignée oun pas
                 #parcourir le detail des équipements pour trouver la référence interne de chaque article 
-                if  contrat_data['equipements'][i]['serialisable']==1 and contrat_data['equipements'][i]['statut_preparation']==1:
+                if  contrat_data['equipements'][i]['serialisable']==1: #and contrat_data['equipements'][i]['statut_preparation']=1:
                     for k in range(len(contrat_data['detailequipements'])): 
-                      if contrat_data['equipements'][i]['equipement_idequipement']==contrat_data['detailequipements'][k]['equipement_idequipement']:
+                      if contrat_data['equipements'][i]['idcategorie']==contrat_data['detailequipements'][k]['categorie_idcategorie']:
                           pdf.cell(epw/7, 2*th, txt=str(contrat_data['detailequipements'][k]['refinterne']),align='C', border=1)
                           break
-                elif contrat_data['equipements'][i]['serialisable']==1 and contrat_data['equipements'][i]['statut_preparation']!=1:
-                    pdf.cell(epw/7, 2*th, align='C', border=1) 
-                elif  contrat_data['equipements'][i]['serialisable']==0: pdf.cell(epw/7, 2*th, txt=str(contrat_data['equipements'][i]['reference']),align='C', border=1)
+                      
+                #elif contrat_data['equipements'][i]['serialisable']==1 and contrat_data['equipements'][i]['statut_preparation']!=1:
+                    #pdf.cell(epw/7, 2*th, txt=str(contrat_data['detailequipements'][k]['refinterne']),align='C', border=1) 
+                elif  contrat_data['equipements'][i]['serialisable']==0: pdf.cell(epw/7, 2*th,align='C', border=1)
               else:         
                 pdf.cell(epw/7, 2*th, txt=str(contrat_data['equipements'][i]['reference']),align='C', border=1)
            
