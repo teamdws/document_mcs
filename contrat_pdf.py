@@ -159,7 +159,7 @@ def contrat_pdf():
               pdf.set_font('Arial',size=8) 
               tmpVarX = pdf.get_x()
               tmpVarY = pdf.get_y()
-              pdf.multi_cell(134.5, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
+              pdf.multi_cell(134.5, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border='T' )
               pdf.set_font('Arial',size=10) 
               pdf.set_xy(tmpVarX+134.5,tmpVarY)
               pdf.cell(  epw/8, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
@@ -170,7 +170,7 @@ def contrat_pdf():
               poids_equipement=poids_equipement+float(contrat_data['equipements'][i]['poids'])          
             pdf.ln(2*th) 
     #affichage des services -------------------------------------------------
-    if len(contrat_data['services'])>=0:
+    if len(contrat_data['services']):
       for i in range(len(contrat_data['services'])):
         montant_net_service=float(contrat_data['services'][i]['prixdefautservice'])
         montantTTC_service=float(contrat_data['services'][i]['prix'])
@@ -199,6 +199,7 @@ def contrat_pdf():
           pdf.cell(  epw/8, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1) 
         montantTotalHT=montantTotalHT+montantTTC_service         
         pdf.ln(2*th) 
+    else:   pdf.cell(160.10,  1, "",align='A', border='T')
     #affichage mentions-----------------------------------------------------
     pdf.ln(5)
     pdf.set_font('Arial',size=8) 
@@ -271,7 +272,6 @@ def contrat_pdf():
     else :
       pdf.add_page()
       pdf.set_auto_page_break(False)
-      pdf.set_y(225)   
       tmpVarX = pdf.get_x()
       tmpVarY = pdf.get_y()
       pdf.multi_cell(120, 4*th,"Fait à ______________________________________, Le _________________________"'\n'
@@ -295,7 +295,7 @@ def contrat_pdf():
       pdf.set_text_color(0, 0, 255)
       pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
       pdf.set_text_color(0)
-      pdf.ln(10)
+      pdf.set_y(260)           
       #company----------------------------------
       pdf.set_font('Arial','B',9) 
       pdf.cell(epw/5, 2*th,  txt="AGENCE PARIS", align='C')
