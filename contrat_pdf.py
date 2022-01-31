@@ -39,8 +39,8 @@ def contrat_pdf():
     pdf.image("./logo.png", 75, 8, 60)
     pdf.set_font('Times','',10.0) 
     pdf.ln(20)
-    pdf.set_left_margin(4)
-    pdf.set_right_margin(4)
+    pdf.set_left_margin(8)
+    pdf.set_right_margin(8)
     type_document="Contrat N° : " if contrat_data['statutcont'] != "Brouillon" else "Devis N° : "
     if contrat_data['statutcont'] != "Brouillon":
       filename="contrat_"+str(contrat_data['idcontrat'])+"_"+str(str(client_adresse['raisonsocial']) if contrat_data['client']!=False else "" )+"_"+str(date.today().strftime("%d/%m/%Y"))
@@ -78,7 +78,7 @@ def contrat_pdf():
       str(str(adresse_chantier['codepostal']) +"    "+str(adresse_chantier['ville']) if adresse_chantier else "" )+'\n'
       "Contact : "+str(contact_chantier['civilite']+ " " +contact_chantier['prenom']+ " " +contact_chantier['nom'] if contact_chantier else "") +'\n'+
       "Tél : "+str(contact_chantier['telmobile'] if contact_chantier else "" ), border=1)
-      pdf.set_xy(tmpVarX+120,tmpVarY)
+      pdf.set_xy(tmpVarX+112,tmpVarY)
       pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'])+'\n'+
       str(client_adresse['raisonsocial'])+'\n'+
       str(adresse_facturation['STREET_NUMBER']+ " " +adresse_facturation['ROUTE'] if adresse_facturation else "" )+'\n'+
@@ -91,7 +91,7 @@ def contrat_pdf():
       pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
       pdf.ln(8)     
       pdf.multi_cell(epw/2.3, th, '\n'+'\n'+'\n'+"Contact : "+""+ " " +""+ " " +""+'\n'+"Tél : "+"", border=1)
-      pdf.set_xy(tmpVarX+120,tmpVarY)
+      pdf.set_xy(tmpVarX+112,tmpVarY)
       pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(str(contrat_data['client_idclient']) if contrat_data['client_idclient']!=None else "")+'\n'+
       ""+'\n'+""+ " " +""+'\n'+""+ " " +""+'\n\n'+"Demandé par : "+""+ " " +""+ " " +""+'\n'+"Tél : "+""+'\n'+"Fax : " ,border=1)
     pdf.ln(9)
@@ -102,7 +102,7 @@ def contrat_pdf():
     "Période de location : "+str(contrat_data['nbdays'])+" Jours"+'\n'+
     "Facturation sur : "+str(str(contrat_data['frequencefacturation']) if contrat_data['frequencefacturation']!=None else "")+"  mois"
     ,border=1)
-    pdf.set_xy(tmpVarX+120,tmpVarY)
+    pdf.set_xy(tmpVarX+112,tmpVarY)
     pdf.multi_cell(epw/2.3, th,"Nos tarifs sont dégressifs, la valeur des prix varie\n"
     "en fonction de location. Toute reprise anticipée\n"
     "avant la date prévue par le contrat de location\n"
@@ -113,13 +113,13 @@ def contrat_pdf():
       pdf.set_font('Arial','B',10.0) 
       pdf.cell(  epw/30 , 2*th, fill=True, txt="Qté", align='C', border=1)
       pdf.cell(  epw/7, 2*th, fill=True, txt="Ref",  align='C', border=1) 
-      pdf.cell(  133, 2*th, fill=True, txt="Description",align='C', border=1)
+      pdf.cell(  125.10, 2*th, fill=True, txt="Description",align='C', border=1)
       pdf.cell(  epw/10, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
       pdf.cell(  epw/11, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
     else:
       pdf.set_font('Arial','B',10.0) 
       pdf.cell(  epw/15, 2*th, fill=True, txt="Qté", align='C', border=1)
-      pdf.cell(  142.5, 2*th, fill=True, txt="Description",align='C', border=1)
+      pdf.cell(  134.5, 2*th, fill=True, txt="Description",align='C', border=1)
       pdf.cell(  epw/8, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
       pdf.cell(  epw/8, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
     pdf.ln(2*th)  
@@ -149,8 +149,8 @@ def contrat_pdf():
               pdf.set_font('Arial',size=6) 
               tmpVarX = pdf.get_x()
               tmpVarY = pdf.get_y()              
-              pdf.multi_cell(133,  3, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border='T')
-              pdf.set_xy(tmpVarX+133  ,tmpVarY)
+              pdf.multi_cell(125.10,  3, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border='T')
+              pdf.set_xy(tmpVarX+125.10  ,tmpVarY)
               pdf.set_font('Arial',size=10) 
               pdf.cell(epw/10, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
               pdf.cell(  epw/11, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
@@ -159,9 +159,9 @@ def contrat_pdf():
               pdf.set_font('Arial',size=8) 
               tmpVarX = pdf.get_x()
               tmpVarY = pdf.get_y()
-              pdf.multi_cell(142.5, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
+              pdf.multi_cell(134.5, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border=1 )
               pdf.set_font('Arial',size=10) 
-              pdf.set_xy(tmpVarX+142.5,tmpVarY)
+              pdf.set_xy(tmpVarX+134.5,tmpVarY)
               pdf.cell(  epw/8, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
               pdf.cell(  epw/8, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
             totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
@@ -181,9 +181,9 @@ def contrat_pdf():
           pdf.set_font('Arial',size=6) 
           tmpVarX = pdf.get_x()
           tmpVarY = pdf.get_y() 
-          pdf.multi_cell(133, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
+          pdf.multi_cell(125.10, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
           pdf.set_font('Arial',size=10) 
-          pdf.set_xy(tmpVarX+133,tmpVarY)
+          pdf.set_xy(tmpVarX+125.10,tmpVarY)
           pdf.cell(  epw/10, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
           pdf.cell(  epw/11, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1)
         else:
@@ -192,9 +192,9 @@ def contrat_pdf():
           pdf.set_font('Arial',size=6) 
           tmpVarX = pdf.get_x()
           tmpVarY = pdf.get_y() 
-          pdf.multi_cell(142.5, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
+          pdf.multi_cell(134.5, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
           pdf.set_font('Arial',size=10) 
-          pdf.set_xy(tmpVarX+142.5,tmpVarY)
+          pdf.set_xy(tmpVarX+134.5,tmpVarY)
           pdf.cell(  epw/8, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
           pdf.cell(  epw/8, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1) 
         montantTotalHT=montantTotalHT+montantTTC_service         
@@ -210,28 +210,32 @@ def contrat_pdf():
     pdf.cell(60) 
     pdf.cell(10, 2*th,"Poids (Kg) :       "+str(poids_equipement))
     pdf.ln(2*th)
-    if pdf.get_y()<=212:
+    if pdf.get_y()<=225:
       #affichage du footer---------------------------------------
+      pdf.set_auto_page_break(False)
+      pdf.set_y(225)     
       tmpVarX = pdf.get_x()
       tmpVarY = pdf.get_y()
       pdf.multi_cell(120, 4*th,"Fait à ______________________________________, Le _________________________"'\n'
       'Signature et cachet précédés de la mention "BON POUR ACCORD" ', align='C',  border=1)
       #Replace le positionnement du curseur coin supérieur droit de la cellule créée
-      pdf.set_xy(tmpVarX+130,tmpVarY)
-      pdf.cell(50, 2*th,"Eco-contribution    "+str(frais_financier)+"  Euro(s)")
-      pdf.cell(10, 2*th," ")
+      pdf.set_xy(tmpVarX+128,tmpVarY)
+      pdf.cell(30, 2*th,"Eco-contribution", align='C', border=1)
+      pdf.cell(20, 2*th,str(frais_financier)+" "+chr(128), align='C', border=1)
       pdf.ln(2*th) 
       pdf.cell(tmpVarX+120)
-      pdf.cell(45, 2*th,fill=True, txt="Total HT :" , align="C",border=1)
-      pdf.cell(30, 2*th, str(montantTotalHT)+" "+chr(128) ,border=1)
+      pdf.cell(20, 2*th,fill=True, txt="Total HT :" , align="C",border=1)
+      pdf.cell(30, 2*th, str(montantTotalHT)+" "+chr(128) , align="C", border=1)
       pdf.ln(2*th) 
       pdf.cell(tmpVarX+120)
-      pdf.cell(45, 2*th, fill=True, txt="TVA :" , align="C",border=1)
-      pdf.cell(30, 2*th,str(totalTVA)+" "+chr(128),border=1)
+      pdf.cell(20, 2*th, fill=True, txt="TVA :" , align="C",border=1)
+      pdf.cell(30, 2*th,str(totalTVA)+" "+chr(128), align="C", border=1)
       pdf.ln(2*th) 
       pdf.cell(tmpVarX+120)
-      pdf.cell(45, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
-      pdf.cell(30, 2*th, str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) ,border=1)
+      pdf.cell(20, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
+      pdf.set_text_color(0, 0, 255)
+      pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
+      pdf.set_text_color(0)
       pdf.ln(10)
       #company----------------------------------
       pdf.set_font('Arial','B',9) 
@@ -265,6 +269,8 @@ def contrat_pdf():
       pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
     else :
       pdf.add_page()
+      pdf.set_auto_page_break(False)
+      pdf.set_y(225)
       tmpVarX = pdf.get_x()
       tmpVarY = pdf.get_y()
       pdf.multi_cell(120, 4*th,"Fait à ______________________________________, Le _________________________"'\n'
@@ -287,7 +293,6 @@ def contrat_pdf():
       pdf.cell(30, 2*th, str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) ,border=1)
       pdf.ln(10)
       #company----------------------------------
-      pdf.set_y(212)
       pdf.set_font('Arial','B',9) 
       pdf.cell(epw/5, 2*th,  txt="AGENCE PARIS", align='C')
       pdf.cell(epw/5, 2*th, txt="AGENCE LYON",align='C')
