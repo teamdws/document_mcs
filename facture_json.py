@@ -5,44 +5,58 @@ from fpdf import FPDF
 from datetime import *
 
 facture=Blueprint("facture", __name__)
-API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id=90046140"
-API_LIGNE_FACTURE="https://back-mcs-v1.herokuapp.com/web/lignefactues?query=%7B%22facture_idfacture%22:95%7D&ascending=1&byColumn=1&type=1"
-URL_FACTURE="https://back-mcs-v1.herokuapp.com/web/facture?id=95"
-URL_ADRESSE="https://back-mcs-v1.herokuapp.com/web/client?id=223"
 
 @facture.route('pdf',methods = ['POST', 'GET'])
 def facture_pdf():
+    #------------------------------------set endpoint
     id_facture= request.args.get('facture')
     #URL_FACTURE = "https://back-mcs-v1.herokuapp.com/web/facture?id="+str(id_contrat)
     URL_FACTURE = "https://back-mcs-v1.herokuapp.com/web/facture?id="+str(id_facture)
     facture_data_response= requests.get(URL_FACTURE)
     facture_data= json.loads(facture_data_response.content.decode('utf-8'))
+    ligne_facture_response=requests.get("https://back-mcs-v1.herokuapp.com/web/lignefactues?query=%7B%22facture_idfacture%22:"+str(id_facture)+"}&ascending=1&byColumn=1&type=1")
+    ligne_facture= json.loads(ligne_facture_response.content.decode('utf-8'))
+    #API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(facture_data['idcontrat'])
+    API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(facture_data['idcontrat'])
+    contrat_data_response= requests.get(API_CONTRAT)
+    contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
     if contrat_data['client']!=False:
       #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
       client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
       client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
-    contrat_data_response= requests.get(API_CONTRAT)
-    contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
-    ligne_facture_response= requests.get(API_LIGNE_FACTURE)
-    ligne_facture= json.loads(ligne_facture_response.content.decode('utf-8'))
-    facture_response= requests.get(URL_FACTURE)
-    facture= json.loads(facture_response.content.decode('utf-8'))
-    facture_adresse_response= requests.get(URL_ADRESSE)
-    facture_adresse= json.loads(facture_adresse_response.content.decode('utf-8'))
-    #data = json.loads(request.args.get('text'))
+    #---------------client adresses --------------------
+    adresse_chantier=[]
+    adresse_facturation=[]
+    contact_facturation=[]
+    if contrat_data['contacts'] and client_adresse:
+    #affichage de contact et adresses-------------------------------------------------
+      for i in range(len(contrat_data['contacts'])): 
+                #parcourir les adresses du client  
+                for j in range(len(client_adresse['adresses'])):
+                  if client_adresse['adresses'][j]['idadresse']==contrat_data['contacts'][i]['adresse_idadresse']:
+                    if client_adresse['adresses'][j]['type']=="chantier":
+                      adresse_chantier=client_adresse['adresses'][j]
+                    else:
+                      adresse_facturation=client_adresse['adresses'][j]
+                #parcourir les contacts du client  
+                for k in range(len(client_adresse['contactes'])):
+                  if client_adresse['contactes'][k]['idcontact']==contrat_data['contacts'][i]['idcontact']:
+                    if client_adresse['contactes'][k]['type']=="facturation":
+                      contact_facturation=client_adresse['contactes'][k]  
+    #-----------PDF creation
     pdf = FPDF()
     pdf.add_page()
     epw = pdf.w - 2*pdf.l_margin
     col_width = epw/7
     th = pdf.font_size
-    date_fin=date.fromisoformat(facture['date_fin'])
-    date_debut=date.fromisoformat(facture['date_debut'])
+    date_fin=date.fromisoformat(facture_data['date_fin'])
+    date_debut=date.fromisoformat(facture_data['date_debut'])
     duree=date_fin-date_debut
-    date_facturation=date.fromisoformat(facture['datefact'])
+    date_facturation=date.fromisoformat(facture_data['datefact'])
     date_limite=date_fin + timedelta(days=30)
     montantTotalHT=0
-    type_document="Facture   " if facture['avoir'] == 0 else "Avoir   "
-    frais_financier=float(facture['fraisfinancier']) if facture['fraisfinancier'] != None else 0
+    type_document="Facture   " if facture_data['avoir'] == 0 else "Avoir   "
+    frais_financier=float(facture_data['fraisfinancier']) if facture_data['fraisfinancier'] != None else 0
     #logo------------------------------------
     pdf.image("./logo.png", 75, 8, 60)
     pdf.set_font('Times','',10.0) 
@@ -58,32 +72,32 @@ def facture_pdf():
     pdf.cell(col_width, 2*th, fill=True,txt= "Ref client",  align='C', border=1)
     pdf.cell(40)
     pdf.set_font('Arial','B',8) 
-    pdf.cell(col_width, 2*th, txt=str(facture_adresse['raisonsocial']), align = 'A')
+    pdf.cell(col_width, 2*th, txt=str(contrat_data['raisonsocial']), align = 'A')
     pdf.ln(2*th) 
     pdf.cell(col_width, 2*th, align='C', border=1)
     pdf.cell(col_width, 2*th, txt=str(contrat_data['idcontrat']),align='C', border=1)
     pdf.cell(col_width, 2*th, txt=str(contrat_data['client_idclient']), align='C', border=1)
     pdf.cell(40)
     pdf.set_font('Arial','B',8) 
-    pdf.cell(col_width, 2*th, txt=facture_adresse['adresses'][0]['STREET_NUMBER']+ " " +facture_adresse['adresses'][0]['ROUTE'], align = 'A')
+    pdf.cell(col_width, 2*th, txt=adresse_facturation['STREET_NUMBER']+ " " +adresse_facturation['ROUTE'], align = 'A')
     pdf.ln(7)
     pdf.cell(col_width, 2*th, fill=True, txt="Date",  align='C', border=1)
     pdf.cell(col_width, 2*th, fill=True, txt="N° Client",  align='C', border=1)
     pdf.cell(col_width, 2*th, fill=True, txt="Cpte client",  align='C', border=1)
     pdf.cell(40)
     pdf.set_font('Arial','B',8) 
-    pdf.cell(col_width, 2*th, txt=str(facture_adresse['adresses'][0]['codepostal'])+ " " +facture_adresse['adresses'][0]['ville'], align = 'A')
+    pdf.cell(col_width, 2*th, txt=str(adresse_facturation['codepostal'])+ " " +adresse_facturation  ['ville'], align = 'A')
     pdf.ln(2*th)
-    pdf.cell(col_width, 2*th, str(date_facturation.strftime("%d/%m/%y")),align='C', border=1)
+    pdf.cell(col_width, 2*th, str(date_facturation.strftime("%d/%m/%Y")),align='C', border=1)
     pdf.cell(col_width, 2*th, txt=str(contrat_data['client_idclient']),align='C', border=1)
     pdf.cell(col_width, 2*th, txt=str(contrat_data['compte_comptable']),align='C', border=1)    
     pdf.cell(40)
     pdf.set_font('Arial','B',8) 
-    pdf.cell(col_width, 2*th, txt="Contact :"+str(facture_adresse['contactes'][1]['civilite'])+ " " +facture_adresse['contactes'][1]['prenom']+ " " +facture_adresse['contactes'][1]['nom'], align = 'A')
+    pdf.cell(col_width, 2*th, txt="Contact :"+str(contact_facturation['civilite'])+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'], align = 'A')
     pdf.ln(3)
     pdf.cell(121.5)
     pdf.set_font('Arial','B',8) 
-    pdf.cell(col_width, 2*th, txt="Tel :"+str(facture_adresse['contactes'][1]['telmobile']), align = 'A')
+    pdf.cell(col_width, 2*th, txt="Tel :"+str(contact_facturation['telmobile']), align = 'A')
     pdf.ln(20)
     pdf.set_font('Arial','B',10) 
     pdf.cell(epw/4, 2*th, fill=True, txt="Lieu utilisation" , align='C', border=1)
@@ -92,17 +106,17 @@ def facture_pdf():
     pdf.cell(epw/4, 2*th, fill=True, txt="Durée de facturation",  align='C', border=1)
     pdf.ln(2*th) 
     pdf.set_font('Arial','B',6) 
-    pdf.cell(epw/4, 2*th, txt=str(facture_adresse['contactes'][1]['TITRE']), align='C', border=1)
+    pdf.cell(epw/4, 2*th, str(str(adresse_chantier['TITRE']) if len(adresse_chantier)>0 else ""), align='C', border=1)
     pdf.set_font('Arial','B',10) 
-    pdf.cell(epw/4, 2*th, str(date_debut.strftime("%d/%m/%y")), align='C', border=1)
-    pdf.cell(epw/4, 2*th, str(date_fin.strftime("%d/%m/%y")), align='C', border=1)
+    pdf.cell(epw/4, 2*th, str(date_debut.strftime("%d/%m/%Y")), align='C', border=1)
+    pdf.cell(epw/4, 2*th, str(date_fin.strftime("%d/%m/%Y")), align='C', border=1)
     pdf.cell(epw/4, 2*th, str(duree.days+1)+" Jours", align='C', border=1)
     pdf.ln(10)
     #line of invoice--------------------------
     pdf.cell(  epw/15, 2*th, fill=True, txt="Qté", align='C', border=1)
     pdf.cell(  113, 2*th, fill=True, txt="Description",align='C', border=1)
     pdf.cell(  epw/10, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
-    pdf.cell(  epw/20, 2*th, fill=True, txt="R"+ " "+facture['type_remise'],  align='C', border=1)
+    pdf.cell(  epw/20, 2*th, fill=True, txt="R"+ " "+facture_data['type_remise'],  align='C', border=1)
     pdf.cell(  epw/10, 2*th, fill=True, txt="PU NET ",  align='C', border=1)
     pdf.cell(  epw/11, 2*th, fill=True, txt="MT HT ",  align='C', border=1)
     pdf.ln(2*th)    
@@ -134,7 +148,7 @@ def facture_pdf():
     pdf.cell(epw/6, 2*th,  fill=True,txt="MONTANT HT",  align='C', border=1)
     pdf.cell(26, 2*th,  txt=str( montantTotalHT), align='C', border=1)
     pdf.ln(2*th)
-    reglement=facture['reglement'] if facture['reglement'] != None else ""
+    reglement=facture['reglement'] if facture_data['reglement'] != None else ""
     pdf.cell(epw/4, 2*th, txt="Analyse T.V.A N° T.V.A",align='A', border=1)
     pdf.cell(85, 2*th,  txt=str(reglement), align='C',border=1)
     pdf.cell(epw/6, 2*th, fill=True, txt="TOTAL TVA", align='C', border=1)
@@ -148,7 +162,7 @@ def facture_pdf():
     pdf.cell(26, 2*th,  str(total_ttc),  align='C', border=1)
     pdf.ln(2*th)
     pdf.cell(67.5, 2*th,  txt="STD      "+"20.00%" "      "+str(montantTotalHT)+"      "+str(totalTVA),align='C', border=1)   
-    pdf.cell(65, 2*th,  str(date_limite.strftime("%d/%m/%y")),align='C', border=1)
+    pdf.cell(65, 2*th,  str(date_limite.strftime("%d/%m/%Y")),align='C', border=1)
     pdf.cell(epw/4, 2*th, "")
     pdf.cell(epw/4, 2*th, "")
     pdf.ln(10)
