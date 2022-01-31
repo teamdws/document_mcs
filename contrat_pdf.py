@@ -94,7 +94,7 @@ def contrat_pdf():
       pdf.set_xy(tmpVarX+112,tmpVarY)
       pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(str(contrat_data['client_idclient']) if contrat_data['client_idclient']!=None else "")+'\n'+
       ""+'\n'+""+ " " +""+'\n'+""+ " " +""+'\n\n'+"Demandé par : "+""+ " " +""+ " " +""+'\n'+"Tél : "+""+'\n'+"Fax : " ,border=1)
-    pdf.ln(9)
+    pdf.ln(2)
     tmpVarX = pdf.get_x()
     tmpVarY = pdf.get_y()
     pdf.multi_cell(epw/2.3, th, "Date debut contrat : "+str(date_debut.strftime("%d/%m/%Y"))+'\n'+
@@ -107,7 +107,7 @@ def contrat_pdf():
     "en fonction de location. Toute reprise anticipée\n"
     "avant la date prévue par le contrat de location\n"
     "entrainera une revalorisation des prix à la hausse. ", border=1)
-    pdf.ln(2)
+    pdf.ln(4)
     #affichage line of contrat-------------------------------------------------------
     if contrat_data['statutcont'] != "Brouillon":
       pdf.set_font('Arial','B',10.0) 
@@ -219,6 +219,7 @@ def contrat_pdf():
       pdf.multi_cell(120, 4*th,"Fait à ______________________________________, Le _________________________"'\n'
       'Signature et cachet précédés de la mention "BON POUR ACCORD" ', align='C',  border=1)
       #Replace le positionnement du curseur coin supérieur droit de la cellule créée
+      pdf.set_font('Arial','B',size=8) 
       pdf.set_xy(tmpVarX+128,tmpVarY)
       pdf.cell(30, 2*th,"Eco-contribution", align='C', border=1)
       pdf.cell(20, 2*th,str(frais_financier)+" "+chr(128), align='C', border=1)
@@ -270,27 +271,30 @@ def contrat_pdf():
     else :
       pdf.add_page()
       pdf.set_auto_page_break(False)
-      pdf.set_y(225)
+      pdf.set_y(225)   
       tmpVarX = pdf.get_x()
       tmpVarY = pdf.get_y()
       pdf.multi_cell(120, 4*th,"Fait à ______________________________________, Le _________________________"'\n'
       'Signature et cachet précédés de la mention "BON POUR ACCORD" ', align='C',  border=1)
       #Replace le positionnement du curseur coin supérieur droit de la cellule créée
-      pdf.set_xy(tmpVarX+130,tmpVarY)
-      pdf.cell(50, 2*th,"Eco-contribution    "+str(frais_financier)+"  Euro(s)")
-      pdf.cell(10, 2*th," ")
+      pdf.set_xy(tmpVarX+128,tmpVarY)
+      pdf.set_font('Arial','B',size=8) 
+      pdf.cell(30, 2*th,"Eco-contribution", align='C', border=1)
+      pdf.cell(20, 2*th,str(frais_financier)+" "+chr(128), align='C', border=1)
       pdf.ln(2*th) 
       pdf.cell(tmpVarX+120)
-      pdf.cell(45, 2*th,fill=True, txt="Total HT :" , align="C",border=1)
-      pdf.cell(30, 2*th, str(montantTotalHT)+" "+chr(128) ,border=1)
+      pdf.cell(20, 2*th,fill=True, txt="Total HT :" , align="C",border=1)
+      pdf.cell(30, 2*th, str(montantTotalHT)+" "+chr(128) , align="C", border=1)
       pdf.ln(2*th) 
       pdf.cell(tmpVarX+120)
-      pdf.cell(45, 2*th, fill=True, txt="TVA :" , align="C",border=1)
-      pdf.cell(30, 2*th,str(totalTVA)+" "+chr(128),border=1)
+      pdf.cell(20, 2*th, fill=True, txt="TVA :" , align="C",border=1)
+      pdf.cell(30, 2*th,str(totalTVA)+" "+chr(128), align="C", border=1)
       pdf.ln(2*th) 
       pdf.cell(tmpVarX+120)
-      pdf.cell(45, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
-      pdf.cell(30, 2*th, str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) ,border=1)
+      pdf.cell(20, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
+      pdf.set_text_color(0, 0, 255)
+      pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
+      pdf.set_text_color(0)
       pdf.ln(10)
       #company----------------------------------
       pdf.set_font('Arial','B',9) 
