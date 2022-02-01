@@ -7,9 +7,6 @@ from fpdf import FPDF
 from datetime import *
 contrat=Blueprint("contrat", __name__)
 
-
-
-
 def footer(pdf):
   pdf.set_auto_page_break(False)
   epw = pdf.w - 2*pdf.l_margin
@@ -46,17 +43,18 @@ def footer(pdf):
   pdf.set_font('Arial','I',8)  
   #pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
   pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
+  pdf.cell(0, 10, 'Page %s' % pdf.page_no(), 0, 0, 'C')
 
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
   id_contrat= request.args.get('contrat')
-  API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(id_contrat)
-  #API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
+  #API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(id_contrat)
+  API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
   contrat_data_response= requests.get(API_CONTRAT)
   contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
   if contrat_data['client']!=False:
-    client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
-    #client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
+    #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
+    client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
     client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
   pdf = FPDF('P', 'mm', 'A4' )
   pdf.add_page()
@@ -327,7 +325,7 @@ def contrat_pdf():
     footer(pdf) 
     pdf.set_auto_page_break(True)   
   response = make_response(pdf.output(dest='S'))
-  response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
+  #response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
   response.headers.set('Content-Type', 'application/pdf')
   return response
 
