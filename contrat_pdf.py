@@ -7,9 +7,6 @@ from fpdf import FPDF
 from datetime import *
 contrat=Blueprint("contrat", __name__)
 
-
-
-
 def footer(pdf):
   pdf.set_auto_page_break(False)
   epw = pdf.w - 2*pdf.l_margin
@@ -46,17 +43,18 @@ def footer(pdf):
   pdf.set_font('Arial','I',8)  
   #pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
   pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
+  pdf.cell(0, 10, 'Page %s' % pdf.page_no(), 0, 0, 'C')
 
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
   id_contrat= request.args.get('contrat')
-  API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(id_contrat)
-  #API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
+  #API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(id_contrat)
+  API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
   contrat_data_response= requests.get(API_CONTRAT)
   contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
   if contrat_data['client']!=False:
-    client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
-    #client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
+    #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
+    client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
     client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
   pdf = FPDF('P', 'mm', 'A4' )
   pdf.add_page()
@@ -114,14 +112,14 @@ def contrat_pdf():
     pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation ", align="C", border=1)
     pdf.ln(8) 
     pdf.multi_cell(epw/2.3, th, str(adresse_chantier['TITRE'] if adresse_chantier else "" )+'\n'+
-    str(adresse_chantier['STREET_NUMBER'] +" "+ adresse_chantier['ROUTE'] if adresse_chantier else "" )+'\n'+
+    str(str(adresse_chantier['STREET_NUMBER']) +" "+ str(adresse_chantier['ROUTE']) if adresse_chantier else "" )+'\n'+
     str(str(adresse_chantier['codepostal']) +"    "+str(adresse_chantier['ville']) if adresse_chantier else "" )+'\n'
     "Contact : "+str(contact_chantier['civilite']+ " " +contact_chantier['prenom']+ " " +contact_chantier['nom'] if contact_chantier else "") +'\n'+
     "Tél : "+str(contact_chantier['telmobile'] if contact_chantier else "" ), border=1)
     pdf.set_xy(tmpVarX+112,tmpVarY)
     pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'])+'\n'+
     str(client_adresse['raisonsocial'])+'\n'+
-    str(adresse_facturation['STREET_NUMBER']+ " " +adresse_facturation['ROUTE'] if adresse_facturation else "" )+'\n'+
+    str(str(adresse_facturation['STREET_NUMBER'])+ " " +str(adresse_facturation['ROUTE']) if len(adresse_facturation)>=0 else "" )+'\n'+
     str(str(adresse_facturation['codepostal'])+ " " +adresse_facturation['ville'] if adresse_facturation else "" )+'\n\n'+
     "Demandé par : "+str(contact_facturation['civilite']+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'] if contact_facturation else "" )+'\n'+
     "Tél : "+str(contact_facturation['telmobile'] if contact_facturation else "") +'\n'+
