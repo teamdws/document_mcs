@@ -5,10 +5,12 @@ import  requests
 import  json
 from fpdf import FPDF
 from datetime import *
-pdf = FPDF('P', 'mm', 'A4' )
-pdf.add_page()
+contrat=Blueprint("contrat", __name__)
 
-def footer():
+
+
+
+def footer(pdf):
   pdf.set_auto_page_break(False)
   epw = pdf.w - 2*pdf.l_margin
   th = pdf.font_size
@@ -45,7 +47,6 @@ def footer():
   #pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
   pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
 
-contrat=Blueprint("contrat", __name__)
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
   id_contrat= request.args.get('contrat')
@@ -57,7 +58,8 @@ def contrat_pdf():
     #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
     client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
     client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
-  #pdf.add_page()
+  pdf = FPDF('P', 'mm', 'A4' )
+  pdf.add_page()
   epw = pdf.w - 2*pdf.l_margin
   th = pdf.font_size
   pdf.set_fill_color(220)
@@ -167,7 +169,7 @@ def contrat_pdf():
         montant_net=float(contrat_data['equipements'][i]['prix'])
         montantTTC=(int(contrat_data['equipements'][i]['Qte'])*int(contrat_data['nbdays']))*float(contrat_data['equipements'][i]['prix'])-float(contrat_data['equipements'][i]['remise'])
         if pdf.get_y()>=230:
-          footer()
+          footer(pdf)
           pdf.add_page()
           pdf.set_auto_page_break(True)
           pdf.set_font('Arial',size=10)            
@@ -218,7 +220,7 @@ def contrat_pdf():
       montant_net_service=float(contrat_data['services'][i]['prixdefautservice'])
       montantTTC_service=float(contrat_data['services'][i]['prix'])
       if pdf.get_y()>=230:
-        footer()
+        footer(pdf)
         pdf.add_page()
         pdf.set_auto_page_break(True)
       if contrat_data['statutcont'] != "Brouillon":
@@ -253,7 +255,7 @@ def contrat_pdf():
   if len(contrat_data['mentions'])>=0:
     for i in range(len(contrat_data['mentions'])):
       if pdf.get_y()>=230:
-          footer()
+          footer(pdf)
           pdf.add_page()
           pdf.set_auto_page_break(True)
       pdf.multi_cell(190, th, str(contrat_data['mentions'][i]['contenuoption']).replace("€", chr(128)))
@@ -288,10 +290,10 @@ def contrat_pdf():
     pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
     pdf.set_text_color(0)
     pdf.ln(10)
-    footer()    
+    footer(pdf)    
     pdf.set_auto_page_break(True)   
   else:
-    footer()
+    footer(pdf)
     pdf.add_page()
     pdf.set_auto_page_break(True)
     pdf.multi_cell(100, 2*th)
@@ -322,10 +324,10 @@ def contrat_pdf():
     pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
     pdf.set_text_color(0)
     pdf.ln(10)
-    footer() 
+    footer(pdf) 
     pdf.set_auto_page_break(True)   
   response = make_response(pdf.output(dest='S'))
-  response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
+  #response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
   response.headers.set('Content-Type', 'application/pdf')
   return response
 
