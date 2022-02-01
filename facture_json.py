@@ -199,5 +199,7 @@ def facture_pdf():
     response.headers.set('Content-Type', 'application/pdf')
     return response
 
+    
+
 if __name__ == '__main__':
 	facture.run(debug = True)
