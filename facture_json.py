@@ -11,18 +11,18 @@ def facture_pdf():
     #------------------------------------set endpoint
     id_facture= request.args.get('facture')
     #URL_FACTURE = "https://back-mcs-v1.herokuapp.com/web/facture?id="+str(id_contrat)
-    URL_FACTURE = "https://back-mcs-v1.herokuapp.com/web/facture?id="+str(id_facture)
+    URL_FACTURE = "https://applocation.directwebsolutions.fr/facture?id="+str(id_facture)
     facture_data_response= requests.get(URL_FACTURE)
     facture_data= json.loads(facture_data_response.content.decode('utf-8'))
-    ligne_facture_response=requests.get("https://back-mcs-v1.herokuapp.com/web/lignefactues?query=%7B%22facture_idfacture%22:"+str(id_facture)+"}&ascending=1&byColumn=1&type=1")
+    ligne_facture_response=requests.get("https://applocation.directwebsolutions.fr/web/lignefactues?query=%7B%22facture_idfacture%22:"+str(id_facture)+"}&ascending=1&byColumn=1&type=1")
     ligne_facture= json.loads(ligne_facture_response.content.decode('utf-8'))
-    #API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(facture_data['idcontrat'])
-    API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(facture_data['idcontrat'])
+    API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(facture_data['idcontrat'])
+    #API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(facture_data['idcontrat'])
     contrat_data_response= requests.get(API_CONTRAT)
     contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
     if contrat_data['client']!=False:
-      #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
-      client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
+      client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
+      #client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
       client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
     #---------------client adresses --------------------
     adresse_chantier=[]
