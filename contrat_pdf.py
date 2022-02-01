@@ -48,13 +48,13 @@ def footer(pdf):
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
   id_contrat= request.args.get('contrat')
-  #API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(id_contrat)
-  API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
+  API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(id_contrat)
+  #API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
   contrat_data_response= requests.get(API_CONTRAT)
   contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
   if contrat_data['client']!=False:
-    #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
-    client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
+    client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
+    #client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
     client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
   pdf = FPDF('P', 'mm', 'A4' )
   pdf.add_page()
@@ -163,6 +163,7 @@ def contrat_pdf():
   pdf.ln(2*th)  
   #affichage des équipements si le tableau n'est pas vide------------------------------------
   if len(contrat_data['equipements'])>=0:
+      pdf.set_font('Arial',size=8) 
       for i in range(len(contrat_data['equipements'])):      
         montant_net=float(contrat_data['equipements'][i]['prix'])
         montantTTC=(int(contrat_data['equipements'][i]['Qte'])*int(contrat_data['nbdays']))*float(contrat_data['equipements'][i]['prix'])-float(contrat_data['equipements'][i]['remise'])
@@ -222,7 +223,7 @@ def contrat_pdf():
         pdf.add_page()
         pdf.set_auto_page_break(True)
       if contrat_data['statutcont'] != "Brouillon":
-        pdf.set_font('Arial','B',10) 
+        pdf.set_font('Arial',size=10) 
         pdf.cell(epw/30, 2*th, txt=str(contrat_data['services'][i]['Qte']),align='C', border=1)
         pdf.cell(epw/7, 2*th, "",align='C', border=1)
         pdf.set_font('Arial',size=6) 
