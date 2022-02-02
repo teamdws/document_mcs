@@ -9,7 +9,6 @@ app.register_blueprint(facture, url_prefix="/facture")
 app.register_blueprint(contrat, url_prefix="/contrat")
 app.register_blueprint(bon, url_prefix="/bon")
 
-
 #@app.route("/")
 #def home():
  #   return "hello"

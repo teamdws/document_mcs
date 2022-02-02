@@ -288,7 +288,6 @@ def contrat_pdf():
     pdf.set_text_color(0, 0, 255)
     pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
     pdf.set_text_color(0)
-    pdf.ln(10)
     footer(pdf)    
     pdf.set_auto_page_break(True)   
   else:
@@ -322,7 +321,6 @@ def contrat_pdf():
     pdf.set_text_color(0, 0, 255)
     pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
     pdf.set_text_color(0)
-    pdf.ln(10)
     footer(pdf) 
     pdf.set_auto_page_break(True)   
   response = make_response(pdf.output(dest='S'))
