@@ -324,7 +324,7 @@ def contrat_pdf():
     footer(pdf) 
     pdf.set_auto_page_break(True)   
   response = make_response(pdf.output(dest='S'))
-  #response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
+  response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
   response.headers.set('Content-Type', 'application/pdf')
   return response
 
