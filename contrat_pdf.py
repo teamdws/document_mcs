@@ -163,7 +163,7 @@ def contrat_pdf():
   pdf.ln(2*th)  
   #affichage des équipements si le tableau n'est pas vide------------------------------------
   if len(contrat_data['equipements'])>=0:
-      pdf.set_font('Arial',size=8) 
+      pdf.set_font('Arial',size=10) 
       for i in range(len(contrat_data['equipements'])):      
         montant_net=float(contrat_data['equipements'][i]['prix'])
         montantTTC=(int(contrat_data['equipements'][i]['Qte'])*int(contrat_data['nbdays']))*float(contrat_data['equipements'][i]['prix'])-float(contrat_data['equipements'][i]['remise'])
@@ -288,7 +288,6 @@ def contrat_pdf():
     pdf.set_text_color(0, 0, 255)
     pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
     pdf.set_text_color(0)
-    pdf.ln(10)
     footer(pdf)    
     pdf.set_auto_page_break(True)   
   else:
@@ -322,7 +321,6 @@ def contrat_pdf():
     pdf.set_text_color(0, 0, 255)
     pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
     pdf.set_text_color(0)
-    pdf.ln(10)
     footer(pdf) 
     pdf.set_auto_page_break(True)   
   response = make_response(pdf.output(dest='S'))
