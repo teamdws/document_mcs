@@ -31,7 +31,7 @@ def contrat_pdf():
     poids_equipement=0
     frais_financier=contrat_data['fraisfinancier'] if contrat_data['fraisfinancier'] != None else 0
     #logo------------------------------------
-    pdf.image("./logo.jpg", 75, 8, 60)
+    pdf.image("./logo.png", 75, 8, 60)
     pdf.set_font('Times','',10.0) 
     pdf.ln(20)
     type_document="Contrat N° : " if contrat_data['statutcont'] != "Brouillon" else "Devis N° : "
