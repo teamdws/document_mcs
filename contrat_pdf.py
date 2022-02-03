@@ -241,8 +241,8 @@ def contrat_pdf():
         pdf.set_xy(tmpVarX+134.5,tmpVarY)
         pdf.cell(  epw/8, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
         pdf.cell(  epw/8, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1) 
-      montantTotalHT=montantTotalHT+montantTTC_service         
-      pdf.ln(2*th) 
+      montantTotalHT=montantTotalHT+montantTTC_service     
+      montantTotalHT=montantTotalHT+montantTTC_service 
   else:   pdf.cell(160.10,  1, "",align='A', border='T')
   #affichage mentions-----------------------------------------------------
   pdf.ln(5)
