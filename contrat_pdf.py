@@ -185,7 +185,7 @@ def contrat_pdf():
               if contrat_data['equipements'][i]['idcategorie']==contrat_data['detailequipements'][k]['categorie_idcategorie']:
                 pdf.cell(epw/7, 2*th, txt=str(contrat_data['detailequipements'][k]['refinterne']),align='C', border=1)
                 break
-          pdf.set_font('Arial',size=6) 
+          pdf.set_font('Arial',size=8) 
           tmpVarX = pdf.get_x()
           tmpVarY = pdf.get_y()              
           pdf.multi_cell(125.10,  3, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border='T')
