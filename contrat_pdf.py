@@ -67,6 +67,8 @@ def contrat_pdf():
   montantTotalHT=0.0
   poids_equipement=0
   totalTVA=0.0
+  totalTVA_service=0.0
+  totalTVA_equipement=0.0
   adresse_chantier=[]
   adresse_facturation=[]
   contact_facturation=[]
@@ -203,7 +205,7 @@ def contrat_pdf():
           pdf.set_xy(tmpVarX+134.5,tmpVarY)
           pdf.cell(  epw/8, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
           pdf.cell(  epw/8, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
-        totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
+        totalTVA_equipement=float(totalTVA+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
         montantTotalHT=montantTotalHT+montantTTC
         if contrat_data['equipements'][i]['poids']:
           poids_equipement=poids_equipement+float(contrat_data['equipements'][i]['poids'])          
@@ -242,7 +244,7 @@ def contrat_pdf():
         pdf.cell(  epw/8, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
         pdf.cell(  epw/8, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1) 
       montantTotalHT=montantTotalHT+montantTTC_service     
-      totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['services'][i]['tva'])/100)))
+      totalTVA_service=float(totalTVA+(montantTTC*(float(contrat_data['services'][i]['tva'])/100)))
   else:   pdf.cell(160.10,  1, "",align='A', border='T')
   #affichage mentions-----------------------------------------------------
   pdf.ln(5)
@@ -256,6 +258,7 @@ def contrat_pdf():
       pdf.multi_cell(190, th, str(contrat_data['mentions'][i]['contenuoption']).replace("€", chr(128)))
       pdf.ln(1) 
 
+  totalTVA=totalTVA_equipement+totalTVA_service
   if pdf.get_y()<=230:
     pdf.multi_cell(100, 2*th)
     pdf.cell(60) 
@@ -310,7 +313,7 @@ def contrat_pdf():
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+133)
     pdf.cell(20, 2*th, fill=True, txt="TVA :" , align="C",border=1)
-    pdf.cell(30, 2*th,str(totalTVA)+" "+chr(128), align="C", border=1)
+    pdf.cell(30, 2*th,str(round(totalTVA,2))" "+chr(128), align="C", border=1)
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+133)
     pdf.cell(20, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
