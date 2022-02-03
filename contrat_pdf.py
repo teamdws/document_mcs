@@ -242,7 +242,7 @@ def contrat_pdf():
         pdf.cell(  epw/8, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
         pdf.cell(  epw/8, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1) 
       montantTotalHT=montantTotalHT+montantTTC_service     
-      totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['services'][i]['tva'])/100)))
+      #totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['services'][i]['tva'])/100)))
 else:   pdf.cell(160.10,  1, "",align='A', border='T')
   #affichage mentions-----------------------------------------------------
   pdf.ln(5)
