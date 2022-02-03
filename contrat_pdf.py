@@ -205,7 +205,7 @@ def contrat_pdf():
           pdf.set_xy(tmpVarX+134.5,tmpVarY)
           pdf.cell(  epw/8, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
           pdf.cell(  epw/8, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
-        totalTVA_equipement=float(totalTVA_equipement+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
+        #totalTVA_equipement=float(totalTVA_equipement+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
         montantTotalHT=montantTotalHT+montantTTC
         if contrat_data['equipements'][i]['poids']:
           poids_equipement=poids_equipement+float(contrat_data['equipements'][i]['poids'])          
