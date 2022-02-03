@@ -205,7 +205,7 @@ def contrat_pdf():
           pdf.set_xy(tmpVarX+134.5,tmpVarY)
           pdf.cell(  epw/8, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
           pdf.cell(  epw/8, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
-        #totalTVA_equipement=float(totalTVA_equipement+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
+        totalTVA_equipement=float(totalTVA_equipement+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
         montantTotalHT=montantTotalHT+montantTTC
         if contrat_data['equipements'][i]['poids']:
           poids_equipement=poids_equipement+float(contrat_data['equipements'][i]['poids'])          
@@ -244,7 +244,7 @@ def contrat_pdf():
         pdf.cell(  epw/8, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
         pdf.cell(  epw/8, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1) 
       montantTotalHT=montantTotalHT+montantTTC_service     
-      totalTVA_service=float(totalTVA_service+(montantTTC*(float(contrat_data['services'][i]['tva'])/100)))
+      totalTVA_service=float(totalTVA_service+(montant_net_service*(float(contrat_data['services'][i]['tva'])/100)))
   else:   pdf.cell(160.10,  1, "",align='A', border='T')
   #affichage mentions-----------------------------------------------------
   pdf.ln(5)
@@ -280,7 +280,7 @@ def contrat_pdf():
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+133)
     pdf.cell(20, 2*th, fill=True, txt="TVA :" , align="C",border=1)
-    pdf.cell(30, 2*th,str(round(totalTVA_service,2))+" "+chr(128), align="C", border=1)
+    pdf.cell(30, 2*th,str(round(totalTVA,2))+" "+chr(128), align="C", border=1)
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+133)
     pdf.cell(20, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
