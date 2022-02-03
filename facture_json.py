@@ -47,11 +47,11 @@ def footer(pdf):
 def facture_pdf():
     #------------------------------------set endpoint
     id_facture= request.args.get('facture')
-    #URL_FACTURE = "https://back-mcs-v1.herokuapp.com/web/facture?id="+str(id_facture)
-    URL_FACTURE = "https://applocation.directwebsolutions.fr/facture?id="+str(id_facture)
+    URL_FACTURE = "https://back-mcs-v1.herokuapp.com/web/facture?id="+str(id_facture)
+    #URL_FACTURE = "https://applocation.directwebsolutions.fr/facture?id="+str(id_facture)
     facture_data_response= requests.get(URL_FACTURE)
     facture_data= json.loads(facture_data_response.content.decode('utf-8'))
-    ligne_facture_response=requests.get("https://applocation.directwebsolutions.fr/lignefactues?query=%7B%22facture_idfacture%22:"+str(id_facture)+"}&ascending=1&byColumn=1&type=1")
+    #ligne_facture_response=requests.get("https://applocation.directwebsolutions.fr/lignefactues?query=%7B%22facture_idfacture%22:"+str(id_facture)+"}&ascending=1&byColumn=1&type=1")
     ligne_facture_response=requests.get("https://back-mcs-v1.herokuapp.com/web/lignefactues?query=%7B%22facture_idfacture%22:"+str(id_facture)+"}&ascending=1&byColumn=1&type=1")
     ligne_facture= json.loads(ligne_facture_response.content.decode('utf-8'))
     #API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(facture_data['idcontrat'])
