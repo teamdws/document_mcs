@@ -280,7 +280,7 @@ def contrat_pdf():
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+133)
     pdf.cell(20, 2*th, fill=True, txt="TVA :" , align="C",border=1)
-    pdf.cell(30, 2*th,str(round(totalTVA,2))+" "+chr(128), align="C", border=1)
+    pdf.cell(30, 2*th,str(round(totalTVA_service,2))+" "+chr(128), align="C", border=1)
     pdf.ln(2*th) 
     pdf.cell(tmpVarX+133)
     pdf.cell(20, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
