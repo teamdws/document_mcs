@@ -222,7 +222,7 @@ def contrat_pdf():
         pdf.set_font('Arial',size=10) 
         pdf.cell(epw/30, 2*th, txt=str(contrat_data['services'][i]['Qte']),align='C', border=1)
         pdf.cell(epw/7, 2*th, "",align='C', border=1)
-        pdf.set_font('Arial',size=6) 
+        pdf.set_font('Arial',size=8) 
         tmpVarX = pdf.get_x()
         tmpVarY = pdf.get_y() 
         pdf.multi_cell(125.10, 2*th, txt=str(contrat_data['services'][i]['titreservice']),align='A', border=1 )
@@ -233,7 +233,7 @@ def contrat_pdf():
       else:
         pdf.set_font('Arial',size=10) 
         pdf.cell(epw/15, 2*th, txt=str(contrat_data['services'][i]['Qte']),align='C', border=1)
-        pdf.set_font('Arial',size=6) 
+        pdf.set_font('Arial',size=8) 
         tmpVarX = pdf.get_x()
         tmpVarY = pdf.get_y() 
         pdf.multi_cell(134.5, 2*th, txt=str(contrat_data['services'][i]['titreservice']),align='A', border=1 )
@@ -242,8 +242,8 @@ def contrat_pdf():
         pdf.cell(  epw/8, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
         pdf.cell(  epw/8, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1) 
       montantTotalHT=montantTotalHT+montantTTC_service     
-      montantTotalHT=montantTotalHT+montantTTC_service 
-  else:   pdf.cell(160.10,  1, "",align='A', border='T')
+      totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['services'][i]['tva'])/100)))
+else:   pdf.cell(160.10,  1, "",align='A', border='T')
   #affichage mentions-----------------------------------------------------
   pdf.ln(5)
   pdf.set_font('Arial',size=8) 
