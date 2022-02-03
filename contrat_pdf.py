@@ -48,13 +48,13 @@ def footer(pdf):
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
   id_contrat= request.args.get('contrat')
-  #API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(id_contrat)
-  API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
+  API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(id_contrat)
+  #API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
   contrat_data_response= requests.get(API_CONTRAT)
   contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
   if contrat_data['client']!=False:
-    #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
-    client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
+    client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
+    #client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
     client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
   pdf = FPDF('P', 'mm', 'A4' )
   pdf.add_page()
@@ -174,21 +174,17 @@ def contrat_pdf():
           pdf.set_font('Arial',size=10)            
         if contrat_data['statutcont'] != "Brouillon":  #affichage de la colone ref s'il sagit d'un contrat
           pdf.cell(epw/30, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
-          if contrat_data['equipements'][i]['reference']!=None:  #vérifier su la colone référence est renseignée oun pas
             #parcourir le detail des équipements pour trouver la référence interne de chaque article 
-            if  contrat_data['equipements'][i]['serialisable']==0: #and contrat_data['equipements'][i]['statut_preparation']=1:
+          if  contrat_data['equipements'][i]['serialisable']==0: #and contrat_data['equipements'][i]['statut_preparation']=1:
               pdf.set_font('Arial',size=8) 
-              pdf.cell(epw/7, 2*th, txt=str(contrat_data['equipements'][i]['reference']),align='C', border=1) 
-            elif contrat_data['equipements'][i]['serialisable']==1 and contrat_data['equipements'][i]['equipement_idequipement']==None:
+              pdf.cell(epw/7, 2*th, str(str(contrat_data['equipements'][i]['reference']) if contrat_data['equipements'][i]['reference']!=None else ""),align='C', border=1) 
+          elif contrat_data['equipements'][i]['serialisable']==1 and contrat_data['equipements'][i]['equipement_idequipement']==None:
               pdf.cell(epw/7, 2*th,align='C', border=1) 
-            else:
-              for k in range(len(contrat_data['detailequipements'])): 
-                if contrat_data['equipements'][i]['idcategorie']==contrat_data['detailequipements'][k]['categorie_idcategorie']:
-                  pdf.cell(epw/7, 2*th, txt=str(contrat_data['detailequipements'][k]['refinterne']),align='C', border=1)
-                  break
-          else:         
-            pdf.set_font('Arial',size=8) 
-            pdf.cell(epw/7, 2*th, "",align='C', border=1)
+          else:
+            for k in range(len(contrat_data['detailequipements'])): 
+              if contrat_data['equipements'][i]['idcategorie']==contrat_data['detailequipements'][k]['categorie_idcategorie']:
+                pdf.cell(epw/7, 2*th, txt=str(contrat_data['detailequipements'][k]['refinterne']),align='C', border=1)
+                break
           pdf.set_font('Arial',size=6) 
           tmpVarX = pdf.get_x()
           tmpVarY = pdf.get_y()              
