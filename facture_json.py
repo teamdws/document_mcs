@@ -40,7 +40,7 @@ def footer(pdf):
   pdf.ln(th*2)
   pdf.set_font('Arial','I',8)  
   #pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
-  pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
+  pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" - N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 - Fax : 0970616386", align = 'C')
   pdf.cell(0, 10, 'Page %s' % pdf.page_no(), 0, 0, 'C')
 
 @facture.route('pdf',methods = ['POST', 'GET'])
@@ -94,9 +94,9 @@ def facture_pdf():
             if client_adresse['contactes'][k]['type']=="facturation":
               contact_facturation=client_adresse['contactes'][k]  
     #-----------PDF creation
-    if facture_data['avoir'] == 0: filename="facture_"+str(contrat_data['idcontrat'])+"_"+str(client_adresse['raisonsocial'])+"_"+str(date.today().strftime("%d/%m/%Y"));
+    if facture_data['avoir'] == "0": filename="facture_"+str(contrat_data['idcontrat'])+"_"+str(client_adresse['raisonsocial'])+"_"+str(date.today().strftime("%d/%m/%Y"));
     else: filename="avoir_"+str(contrat_data['idcontrat'])+"_"+str(client_adresse['raisonsocial'])+"_"+str(date.today().strftime("%d/%m/%Y"))
-    type_document="Facture   " if facture_data['avoir'] == 0 else "Avoir   "
+    type_document="Facture   " if facture_data['avoir'] == "0" else "Avoir   "
     frais_financier=facture_data['fraisfinancier'] if facture_data['fraisfinancier'] != None else 0
     #logo------------------------------------
     pdf.image("./logo.png", 75, 8, 60)
