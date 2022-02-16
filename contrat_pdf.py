@@ -39,7 +39,7 @@ totalttc = 0
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
     cipher = AESCipher('12lrtkjhy', 'muni1yyyft23')
-    contratdt= cipher.decrypt(base64.b64decode(request.args.get('contrat'))).decode("utf-8")
+    contratdt= cipher.decrypt(base64.b64decode(request.form.get('contrat'))).decode("utf-8")
     contrat_data= json.loads(contratdt)
     date_creation=date.fromisoformat(contrat_data['datedebcont']) if contrat_data['statutcont'] != "Brouillon" else date.today()
     date_debut=date.fromisoformat(contrat_data['datedebcont']) if contrat_data['datedebcont'] != None else date.today()
@@ -276,7 +276,7 @@ def contrat_pdf():
     pdf.total()
     pdf.set_font("Roboto", size=12)
     response = make_response(pdf.output(dest='S'))
-    response.headers.set('Content-Disposition', 'inline', filename=filename + '.pdf')
+    response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
     response.headers.set('Content-Type', 'application/pdf')
     return response
 
