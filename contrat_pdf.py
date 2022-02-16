@@ -1,328 +1,284 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 from flask import Blueprint, make_response, request
+import base64
+import hashlib
+from Crypto.Cipher import AES
+from Crypto.Util.Padding import pad
+from Crypto.Util.Padding import unpad
 import  requests
 import  json
-from fpdf import FPDF
-from datetime import *
+from datetime import * 
+from fpdf import FPDF, HTMLMixin
+from fpdf import FlexTemplate
+import functools
+
 contrat=Blueprint("contrat", __name__)
+class AESCipher:
+    def __init__(self, key, iv):
+        self.key = hashlib.sha256(key.encode('utf-8')).hexdigest()[:32].encode("utf-8")
+        self.iv = hashlib.sha256(iv.encode('utf-8')).hexdigest()[:16].encode("utf-8")
 
-def footer(pdf):
-  pdf.set_auto_page_break(False)
-  epw = pdf.w - 2*pdf.l_margin
-  th = pdf.font_size
-  # Go to 1.5 cm from bottom
-  pdf.set_y(-30)
-  #company----------------------------------
-  pdf.set_font('Arial','B',9) 
-  pdf.cell(epw/5, 2*th,  txt="AGENCE PARIS", align='C')
-  pdf.cell(epw/5, 2*th, txt="AGENCE LYON",align='C')
-  pdf.cell(epw/5, 2*th, txt= "AGENCE MEAUX",  align='C')
-  pdf.cell(epw/5, 2*th,  txt="AGENCE AGEN",align='C')
-  pdf.cell(epw/5, 2*th, txt= "AGENCE AVIGNON",  align='C')
-  pdf.ln(th)
-  pdf.set_font('Arial',size=8) 
-  pdf.cell(epw/5, 2*th,  txt="100 Avenue de choisy", align='C')
-  pdf.cell(epw/5, 2*th,  txt="6 Rue des Catelines", align='C')
-  pdf.cell(epw/5, 2*th,  txt="2 Rue de la Briqueterie", align='C')
-  pdf.cell(epw/5, 2*th,  txt="89 Rue Joseph Teulère", align='C')
-  pdf.cell(epw/5, 2*th,  txt="135 Avenue Pierre Sémard", align='C')
-  pdf.ln(th)
-  pdf.cell(epw/5, 2*th,  txt="94190 Villeneuve St Georges", align='L')
-  pdf.cell(epw/5, 2*th,  txt="69720 St Laurent de Mure", align='R')
-  pdf.cell(epw/6, 2*th,  txt="77470 Poincy", align='C')
-  pdf.cell(epw/4, 2*th,  txt="Z.A. de Trignac 47240 Castelculier", align='L')
-  pdf.cell(epw/5, 2*th,  txt="MIN BAT.3 84000 Avignon", align='R')
-  pdf.ln(th)
-  pdf.cell(epw/5, 2*th,  txt="Tél : 01.43.89.06.00", align='C')
-  pdf.cell(epw/5, 2*th,  txt="Tél : 04.37.58.44.26", align='C')
-  pdf.cell(epw/5, 2*th,  txt="Tél : 01.60.09.81.31", align='C')
-  pdf.cell(epw/5, 2*th,  txt="Tél : 05.53.48.32.94", align='C')
-  pdf.cell(epw/5, 2*th,  txt="Tél : 04.90.87.18.08", align='C')
-  pdf.ln(th*2)
-  pdf.set_font('Arial','I',8)  
-  #pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
-  pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
-  pdf.cell(0, 10, 'Page %s' % pdf.page_no(), 0, 0, 'C')
+  
 
+    def encrypt( self, raw ):
+        raw = raw.encode('utf-8')
+        raw = pad(raw, AES.block_size)
+        cipher = AES.new(self.key, AES.MODE_CBC, self.iv)
+        return base64.b64encode(cipher.encrypt(raw))
+
+    def decrypt( self, enc ):
+        enc = base64.b64decode(enc)
+        cipher = AES.new(self.key, AES.MODE_CBC, self.iv )
+        return unpad(cipher.decrypt(enc) , AES.block_size )
+poids = float(0)   
+totalht = 0   
+totalttc = 0  
+
+        
 @contrat.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
-  id_contrat= request.args.get('contrat')
-  #API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(id_contrat)
-  API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(id_contrat)
-  contrat_data_response= requests.get(API_CONTRAT)
-  contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
-  if contrat_data['client']!=False:
-    #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
-    client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
-    client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
-  pdf = FPDF('P', 'mm', 'A4' )
-  pdf.add_page()
-  epw = pdf.w - 2*pdf.l_margin
-  th = pdf.font_size
-  pdf.set_fill_color(220)
-  date_creation=date.fromisoformat(contrat_data['datedebcont']) if contrat_data['statutcont'] != "Brouillon" else date.today()
-  date_debut=date.fromisoformat(contrat_data['datedebcont']) if contrat_data['datedebcont'] != None else date.today()
-  date_fin=date.fromisoformat(contrat_data['datefincont']) if contrat_data['datefincont'] != None else date.today()
-  montantTotalHT=0.0
-  poids_equipement=0
-  totalTVA=0.0
-  adresse_chantier=[]
-  adresse_facturation=[]
-  contact_facturation=[]
-  contact_chantier=[]
-  frais_financier=contrat_data['fraisfinancier'] if contrat_data['fraisfinancier'] != None else 0
+    cipher = AESCipher('12lrtkjhy', 'muni1yyyft23')
+    contratdt= cipher.decrypt(base64.b64decode(request.args.get('contrat'))).decode("utf-8")
+    contrat_data= json.loads(contratdt)
+    date_creation=date.fromisoformat(contrat_data['datedebcont']) if contrat_data['statutcont'] != "Brouillon" else date.today()
+    date_debut=date.fromisoformat(contrat_data['datedebcont']) if contrat_data['datedebcont'] != None else date.today()
+    date_fin=date.fromisoformat(contrat_data['datefincont']) if contrat_data['datefincont'] != None else date.today()
+     
+    frais_financier=float(contrat_data['fraisfinancier']) if contrat_data['fraisfinancier'] != None else 0
+    class PDF(FPDF, HTMLMixin):
 
-  #logo------------------------------------
-  pdf.image("./logo.png", 75, 8, 60)
-  pdf.set_font('Times','',10.0) 
-  pdf.ln(20)
-  pdf.set_left_margin(8)
-  pdf.set_right_margin(8)
-  type_document="Contrat N° : " if contrat_data['statutcont'] != "Brouillon" else "Devis N° : "
-  if contrat_data['statutcont'] != "Brouillon":
-    filename="contrat_"+str(contrat_data['idcontrat'])+"_"+str(str(client_adresse['raisonsocial']) if contrat_data['client']!=False else "" )+"_"+str(date.today().strftime("%d/%m/%Y"))
-  else:
-    filename="devis_"+str(contrat_data['idcontrat'])+"_"+str(str(client_adresse['raisonsocial']) if  contrat_data['client']!=False else "" )+"_"+str(date.today().strftime("%d/%m/%Y"))
-  pdf.ln(4*th)
-  #header---------------------------------------------
-  tmpVarX = pdf.get_x()
-  tmpVarY = pdf.get_y()
-  pdf.multi_cell(epw/2.3, th,type_document+str(contrat_data['idcontrat'])+" Date : "+str(date_creation.strftime("%d/%m/%Y"))+'\n'
-  ""+ "Suivi par : "+ str(str(contrat_data['commercial']) if contrat_data['commercial']!=None else "" ),  border=1)
-  pdf.ln(1) 
-  if contrat_data['contacts'] and client_adresse:
-  #affichage de contact et adresses-------------------------------------------------
-    for i in range(len(contrat_data['contacts'])): 
-              #parcourir les adresses du client  
-              for j in range(len(client_adresse['adresses'])):
-                if client_adresse['adresses'][j]['idadresse']==contrat_data['contacts'][i]['adresse_idadresse']:
-                  if client_adresse['adresses'][j]['type']=="chantier":
-                    adresse_chantier=client_adresse['adresses'][j]
-                  else:
-                    adresse_facturation=client_adresse['adresses'][j]
-              #parcourir les contacts du client  
-              for k in range(len(client_adresse['contactes'])):
-                if client_adresse['contactes'][k]['idcontact']==contrat_data['contacts'][i]['idcontact']:
-                  if client_adresse['contactes'][k]['type']=="chantier":
-                    contact_chantier=client_adresse['contactes'][k]      
-                  else:
-                    contact_facturation=client_adresse['contactes'][k]
+        def header(self):
+            # Rendering logo:
+            self.image( self.logo , 10, 8, 33)
+            self.set_font("Roboto","B", size=18)
+            self.cell(80)
+            self.cell(0, 10, self.Title, 0, 0, "R")
+            self.set_font("Roboto","", size=10)
+            self.ln()
+            self.cell(0, 0, "Date : "+self.dte+" Suivi par : "+self.commercial, 0, 0, "R")
+            self.ln(20)
+            
+        def utilisation(self):
+            tmpVarY = self.get_y()
+            self.set_fill_color(222 , 85 , 90)
+            self.set_text_color(255 , 255 , 255)
+            self.cell(epw/3, self.font_size + 5, fill=True, txt="Lieu d'utilisation ", align="C", border=0)
+            self.set_text_color(0 , 0 , 0)
+            self.ln(self.font_size + 5)
+            tmpVarX = self.get_x() + epw/3
+            if self.chantier and self.chantier['adresse']:
+                if self.chantier['adresse']['TITRE']:
+                    self.cell(0,  self.font_size + 2, self.chantier['adresse']['TITRE'], 0, 1)
+                self.cell(0,  self.font_size +2 , str(self.chantier['adresse']['STREET_NUMBER']) +" "+ str(self.chantier['adresse']['ROUTE']) , 0, 1)
+                self.cell(0,  self.font_size +2 ,str(self.chantier['adresse']['codepostal']) +"    "+str(self.chantier['adresse']['ville']), 0, 1)
+                self.cell(0,  self.font_size +2 ,"Contact : "+str(self.chantier['civilite'])+ " " +self.chantier['prenom']+ " " +self.chantier['nom'], 0, 1)
+                self.cell(0,  self.font_size +2 ,"Tél : "+str(self.chantier['telmobile']), 0, 1)
+            self.set_xy(tmpVarX+ epw/3,tmpVarY)
+            self.set_fill_color(222 , 85 , 90)
+            self.set_text_color(255 , 255 , 255)
+            self.cell(epw/3, self.font_size + 5, fill=True, txt="CLIENT N° : "+str(contrat_data['client']['idclient']) , align="C", border=0)
+            self.set_text_color(0 , 0 , 0)
+            self.set_xy(tmpVarX+epw/3,tmpVarY+ self.font_size + 5)
+            if self.facturation and self.facturation['adresse']:
+                if self.facturation['adresse']['TITRE']:
+                    self.cell(0,  self.font_size + 2, str(contrat_data['client']['raisonsocial']), 0, 1)
+                    self.set_x(tmpVarX+ epw/3)
+                    self.cell(0,  self.font_size + 2, self.facturation['adresse']['TITRE'], 0, 1)
+                    self.set_x(tmpVarX+ epw/3)
+                self.cell(0,  self.font_size +2 , str(self.facturation['adresse']['STREET_NUMBER']) +" "+ str(self.facturation['adresse']['ROUTE']) , 0, 1)
+                self.set_x(tmpVarX+ epw/3)
+                self.cell(0,  self.font_size +2 ,str(self.facturation['adresse']['codepostal']) +"    "+str(self.facturation['adresse']['ville']), 0, 1)
+                self.set_x(tmpVarX+ epw/3)
+                self.cell(0,  self.font_size +2 ,"Contact : "+str(self.facturation['civilite'])+ " " +self.facturation['prenom']+ " " +self.facturation['nom'], 0, 1)
+                self.set_x(tmpVarX+epw/3)
+                self.cell(0,  self.font_size +2 ,"Tél : "+str(self.facturation['telmobile']), 0, 1)
+            self.ln(7)
+            line_height = pdf.font_size * 2
+            col_width = pdf.epw / 4
+            TABLE_COL_NAMES = ("Date de début du contrat", "Date de fin du contrat", "Période de location", "Facturation sur")
+            TABLE_DATA = (str(date_debut.strftime("%d/%m/%Y")), str(date_fin.strftime("%d/%m/%Y")), str(contrat_data['nbdays'])+" Jours", str(str(contrat_data['frequencefacturation']) if contrat_data['frequencefacturation']!=None else "")+"  mois")
+            self.set_fill_color(222 , 85 , 90)
+            self.set_text_color(255 , 255 , 255)
+            for col_name in TABLE_COL_NAMES:
+                self.cell(col_width, line_height, col_name, border=0 ,fill=True)
+            self.ln(line_height)
+            self.set_text_color(0 , 0 , 0)
+            self.set_draw_color(222 , 85 , 90)
+            for col_name in TABLE_DATA:
+                self.cell(col_width, line_height, col_name, border=1 ,fill=False)
+            self.ln(line_height)
+            
+            self.multi_cell(0, pdf.font_size +3,"""Nos tarifs sont dégressifs, la valeur des prix varie en fonction de location. Toute reprise anticipée avant la date prévue par le contrat de location entrainera une revalorisation des prix à la hausse. """, border=1)
+            self.ln(4)
+        
 
-    pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation ", align="C", border=1)
-    pdf.ln(8) 
-    pdf.multi_cell(epw/2.3, th, str(adresse_chantier['TITRE'] if adresse_chantier else "" )+'\n'+
-    str(str(adresse_chantier['STREET_NUMBER']) +" "+ str(adresse_chantier['ROUTE']) if adresse_chantier else "" )+'\n'+
-    str(str(adresse_chantier['codepostal']) +"    "+str(adresse_chantier['ville']) if adresse_chantier else "" )+'\n'
-    "Contact : "+str(contact_chantier['civilite']+ " " +contact_chantier['prenom']+ " " +contact_chantier['nom'] if contact_chantier else "") +'\n'+
-    "Tél : "+str(contact_chantier['telmobile'] if contact_chantier else "" ), border=1)
-    pdf.set_xy(tmpVarX+112,tmpVarY)
-    pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(contrat_data['client']['idclient'])+'\n'+
-    str(client_adresse['raisonsocial'])+'\n'+
-    str(str(adresse_facturation['STREET_NUMBER'])+ " " +str(adresse_facturation['ROUTE']) if len(adresse_facturation)>=0 else "" )+'\n'+
-    str(str(adresse_facturation['codepostal'])+ " " +adresse_facturation['ville'] if adresse_facturation else "" )+'\n\n'+
-    "Demandé par : "+str(contact_facturation['civilite']+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'] if contact_facturation else "" )+'\n'+
-    "Tél : "+str(contact_facturation['telmobile'] if contact_facturation else "") +'\n'+
-    "Fax : " ,border=1)
-    pdf.ln(7)
-  else:    
-    pdf.cell(epw/2.3, th, fill=True, txt="Lieu d'utilisation :", align="C", border=1)
-    pdf.ln(8)     
-    pdf.multi_cell(epw/2.3, th, '\n'+'\n'+'\n'+"Contact : "+""+ " " +""+ " " +""+'\n'+"Tél : "+"", border=1)
-    pdf.set_xy(tmpVarX+112,tmpVarY)
-    pdf.multi_cell(epw/2.3, th,"CLIENT N° : "+str(str(contrat_data['client_idclient']) if contrat_data['client_idclient']!=None else "")+'\n'+
-    ""+'\n'+""+ " " +""+'\n'+""+ " " +""+'\n\n'+"Demandé par : "+""+ " " +""+ " " +""+'\n'+"Tél : "+""+'\n'+"Fax : " ,border=1)
-  pdf.ln(7)
-  tmpVarX = pdf.get_x()
-  tmpVarY = pdf.get_y()
-  pdf.multi_cell(epw/2.3, th, "Date debut contrat : "+str(date_debut.strftime("%d/%m/%Y"))+'\n'+
-  "Date fin contrat : "+str(date_fin.strftime("%d/%m/%Y"))+'\n'+
-  "Période de location : "+str(contrat_data['nbdays'])+" Jours"+'\n'+
-  "Facturation sur : "+str(str(contrat_data['frequencefacturation']) if contrat_data['frequencefacturation']!=None else "")+"  mois"
-  ,border=1)
-  pdf.set_xy(tmpVarX+112,tmpVarY)
-  pdf.multi_cell(epw/2.3, th,"Nos tarifs sont dégressifs, la valeur des prix varie\n"
-  "en fonction de location. Toute reprise anticipée\n"
-  "avant la date prévue par le contrat de location\n"
-  "entrainera une revalorisation des prix à la hausse. ", border=1)
-  pdf.ln(4)
-  #affichage line of contrat-------------------------------------------------------
-  if contrat_data['statutcont'] != "Brouillon":
-    pdf.set_font('Arial','B',10.0) 
-    pdf.cell(  epw/30 , 2*th, fill=True, txt="Qté", align='C', border=1)
-    pdf.cell(  epw/7, 2*th, fill=True, txt="Ref",  align='C', border=1) 
-    pdf.cell(  125.10, 2*th, fill=True, txt="Description",align='C', border=1)
-    pdf.cell(  epw/10, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
-    pdf.cell(  epw/11, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
-  else:
-    pdf.set_font('Arial','B',10.0) 
-    pdf.cell(  epw/15, 2*th, fill=True, txt="Qté", align='C', border=1)
-    pdf.cell(  134.5, 2*th, fill=True, txt="Description",align='C', border=1)
-    pdf.cell(  epw/8, 2*th, fill=True, txt="PU BRUT",  align='C', border=1)
-    pdf.cell(  epw/8, 2*th, fill=True, txt="MT HT ",  align='C', border=1) 
-  pdf.ln(2*th)  
-  #affichage des équipements si le tableau n'est pas vide------------------------------------
-  if len(contrat_data['equipements'])>=0:
-      pdf.set_font('Arial',size=10) 
-      for i in range(len(contrat_data['equipements'])):      
-        montant_net=float(contrat_data['equipements'][i]['prix'])
-        montantTTC=(int(contrat_data['equipements'][i]['Qte'])*int(contrat_data['nbdays']))*float(contrat_data['equipements'][i]['prix'])-float(contrat_data['equipements'][i]['remise'])
-        if pdf.get_y()>=230:
-          footer(pdf)
-          pdf.add_page()
-          pdf.set_auto_page_break(True)
-          pdf.set_font('Arial',size=10)            
-        if contrat_data['statutcont'] != "Brouillon":  #affichage de la colone ref s'il sagit d'un contrat
-          pdf.cell(epw/30, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
-            #parcourir le detail des équipements pour trouver la référence interne de chaque article 
-          if  contrat_data['equipements'][i]['serialisable']==0: #and contrat_data['equipements'][i]['statut_preparation']=1:
-              pdf.set_font('Arial',size=8) 
-              pdf.cell(epw/7, 2*th, str(str(contrat_data['equipements'][i]['reference']) if contrat_data['equipements'][i]['reference']!=None else ""),align='C', border=1) 
-          elif contrat_data['equipements'][i]['serialisable']==1 and contrat_data['equipements'][i]['equipement_idequipement']==None:
-              pdf.cell(epw/7, 2*th,align='C', border=1) 
-          else:
-            for k in range(len(contrat_data['detailequipements'])): 
-              if contrat_data['equipements'][i]['idcategorie']==contrat_data['detailequipements'][k]['categorie_idcategorie']:
-                pdf.cell(epw/7, 2*th, txt=str(contrat_data['detailequipements'][k]['refinterne']),align='C', border=1)
-                break
-          pdf.set_font('Arial',size=6) 
-          tmpVarX = pdf.get_x()
-          tmpVarY = pdf.get_y()              
-          pdf.multi_cell(125.10,  3, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border='T')
-          pdf.set_xy(tmpVarX+125.10  ,tmpVarY)
-          pdf.set_font('Arial',size=10) 
-          pdf.cell(epw/10, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
-          pdf.cell(  epw/11, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
-        else :
-          pdf.cell(epw/15, 2*th, txt=str(contrat_data['equipements'][i]['Qte']),align='C', border=1)
-          pdf.set_font('Arial',size=8) 
-          tmpVarX = pdf.get_x()
-          tmpVarY = pdf.get_y()
-          pdf.multi_cell(134.5, 2*th, txt=str(contrat_data['equipements'][i]['denomination']),align='A', border='T' )
-          pdf.set_font('Arial',size=10) 
-          pdf.set_xy(tmpVarX+134.5,tmpVarY)
-          pdf.cell(  epw/8, 2*th, txt=str(round(montant_net,2))+" "+chr(128), align='C', border=1)
-          pdf.cell(  epw/8, 2*th, txt=str(round(montantTTC,2))+" "+chr(128), align='C', border=1)
-        totalTVA=float(totalTVA+(montantTTC*(float(contrat_data['equipements'][i]['tva'])/100)))
-        montantTotalHT=montantTotalHT+montantTTC
-        if contrat_data['equipements'][i]['poids']:
-          poids_equipement=poids_equipement+float(contrat_data['equipements'][i]['poids'])          
-        pdf.ln(2*th) 
+        def tabledata(self):
+            def transformservice(n):
+                s = {}
+                global totalht
+                global totalttc
+                s['Qte'] = n['Qte']
+               
+                s['reference'] = ""
+                s['denomination'] = str(n['titreservice']) if n['titreservice'] !=None else " "
+                s['montant_net'] = float(n['prix'])  if n['prix'] !=None else 0
+                s['tva'] = float(n['tva'])  if n['tva'] !=None else 0
+                try:
+                    s['montantHT'] =  (int(n['Qte'])* s['montant_net']) * (1 - float(n['remise'])/100)
+                except:
+                    s['montantHT'] =  0 
+                totalht = totalht+ s['montantHT']
+                totalttc = totalttc+ s['montantHT'] * (1+ s['tva']/100)
+                return s
+                
+            def transform(n):
+                s = {}
+                global poids
+                global totalht
+                global totalttc
+                s['Qte'] = int(n['Qte']) if n['Qte']!=None else 0
+                s['poids'] = float(n['poids']) if n['poids']!=None else 0
+                s['tva'] = float(n['tva'])  if n['tva'] !=None else 0
+                poids = poids + s['Qte'] * s['poids']
 
-  #affichage des services -------------------------------------------------
-  if len(contrat_data['services']):
-    for i in range(len(contrat_data['services'])):
-      montant_net_service=float(contrat_data['services'][i]['prixdefautservice'])
-      montantTTC_service=float(contrat_data['services'][i]['prix'])
-      if pdf.get_y()>=230:
-        footer(pdf)
-        pdf.add_page()
-        pdf.set_auto_page_break(True)
-      if contrat_data['statutcont'] != "Brouillon":
-        pdf.set_font('Arial',size=10) 
-        pdf.cell(epw/30, 2*th, txt=str(contrat_data['services'][i]['Qte']),align='C', border=1)
-        pdf.cell(epw/7, 2*th, "",align='C', border=1)
-        pdf.set_font('Arial',size=6) 
-        tmpVarX = pdf.get_x()
-        tmpVarY = pdf.get_y() 
-        pdf.multi_cell(125.10, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
-        pdf.set_font('Arial',size=10) 
-        pdf.set_xy(tmpVarX+125.10,tmpVarY)
-        pdf.cell(  epw/10, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
-        pdf.cell(  epw/11, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1)
-      else:
-        pdf.set_font('Arial',size=10) 
-        pdf.cell(epw/15, 2*th, txt=str(contrat_data['services'][i]['Qte']),align='C', border=1)
-        pdf.set_font('Arial',size=6) 
-        tmpVarX = pdf.get_x()
-        tmpVarY = pdf.get_y() 
-        pdf.multi_cell(134.5, 2*th, txt=str(contrat_data['services'][i]['description']),align='A', border=1 )
-        pdf.set_font('Arial',size=10) 
-        pdf.set_xy(tmpVarX+134.5,tmpVarY)
-        pdf.cell(  epw/8, 2*th, txt=str(montant_net_service)+" "+chr(128), align='C', border=1)
-        pdf.cell(  epw/8, 2*th, txt=str(montantTTC_service)+" "+chr(128), align='C', border=1) 
-      montantTotalHT=montantTotalHT+montantTTC_service         
-      pdf.ln(2*th) 
-  else:   pdf.cell(160.10,  1, "",align='A', border='T')
-  #affichage mentions-----------------------------------------------------
-  pdf.ln(5)
-  pdf.set_font('Arial',size=8) 
-  if len(contrat_data['mentions'])>=0:
-    for i in range(len(contrat_data['mentions'])):
-      if pdf.get_y()>=230:
-          footer(pdf)
-          pdf.add_page()
-          pdf.set_auto_page_break(True)
-      pdf.multi_cell(190, th, str(contrat_data['mentions'][i]['contenuoption']).replace("€", chr(128)))
-      pdf.ln(1) 
+                ref = ""
+                if  n['serialisable']==0:
+                    ref = str(n['reference']) if n['reference']!=None else "" 
+                elif n['serialisable']==1 and n['equipement_idequipement'] !=None:
+                    a =  (x for x in contrat_data['detailequipements'] if n['idcategorie']== x['categorie_idcategorie'])
+                    ref = (next(a))['refinterne']
+                s['reference'] = ref
+                s['denomination'] = n['denomination'] if n['denomination'] !=None else " "
+                s['montant_net'] = float(n['prix'])  if n['prix'] !=None else 0
+                try:
+                    s['montantHT'] = (int(n['Qte'])* s['montant_net'] * contrat_data['nbdays']) * (1 - float(n['remise'])/100)
+                    
+                except:
+                    s['montantHT'] =  0 
+                totalht = totalht+ s['montantHT']
+                totalttc = totalttc+ s['montantHT'] * (1+ s['tva']/100)
+                return s
+            
+            def render_table_header():
+                self.set_fill_color(222 , 85 , 90)
+                self.set_text_color(255 , 255 , 255)
+                self.cell(  epw/16, self.font_size +3, fill=True, txt="Qté", align='C', border=1)
+                self.cell(  epw/8,  self.font_size +3, fill=True, txt="Ref",  align='C', border=1) 
+                self.cell(  (9*epw)/16, self.font_size +3, fill=True, txt="Description",align='C', border=1)
+                self.cell(  epw/8, self.font_size +3, fill=True, txt="PU BRUT",  align='C', border=1)
+                self.cell(  epw/8, self.font_size +3, fill=True, txt="MT HT ",  align='C', border=1) 
+                self.set_text_color(0 , 0 , 0)
+                self.ln( self.font_size +3)
+            render_table_header()
+            if len(contrat_data['equipements'])>=0:
+                result = map(transform, contrat_data['equipements'])
+                self.set_font("Roboto","" ,10)
+                for r in result:
+                    
+                    self.cell(  epw/16, self.font_size +3, fill=False, txt= str(r['Qte']), align='L', border=1)
+                    self.cell(  epw/8,  self.font_size +3, fill=False, txt= str( r['reference']),  align='L', border=1) 
+                    self.cell(  (9*epw)/16, self.font_size +3, fill=False, txt= (r['denomination'])[:60],align='L', border=1)
+                    self.cell(  epw/8, self.font_size +3, fill=False, txt= str(round(r['montant_net'],2))+" €",  align='L', border=1)
+                    self.cell(  epw/8, self.font_size +3, fill=False, txt= str(round(r['montantHT'],2))+" €",  align='L', border=1) 
+                    self.ln( self.font_size +3)
+                if len(contrat_data['services']) >=0 :
+                    
+                    self.set_font("Roboto", "I", 10)
+                    result1 = map(transformservice, contrat_data['services'])
+                    for r in result1 :
+                        self.cell(  epw/16, self.font_size +3, fill=False, txt= str(r['Qte']), align='L', border=1)
+                        self.cell(  epw/8,  self.font_size +3, fill=False, txt= str( r['reference']),  align='L', border=1) 
+                        self.cell( (9*epw)/16, self.font_size +3, fill=False, txt= (r['denomination'])[:60],align='L', border=1)
+                        self.cell(  epw/8, self.font_size +3, fill=False, txt= str(round(r['montant_net'],2))+" €",  align='L', border=1)
+                        self.cell(  epw/8, self.font_size +3, fill=False, txt= str(round(r['montantHT'],2))+" €",  align='L', border=1) 
+                        self.ln( self.font_size +3)
+                    self.set_font("Roboto","" ,12)
+                if len(contrat_data['mentions'])>=0:
+                    
+                    self.set_font("Roboto","B" ,12)
+                    for i in range(len(contrat_data['mentions'])):
+                        self.multi_cell(  epw, self.font_size +3, fill=False, txt=  str(contrat_data['mentions'][i]['contenuoption']),  align='L', border=1) 
+                        self.ln(0) 
+                    self.set_font("Roboto","" ,12)
+        def total(self):
+            self.cell(0, pdf.font_size +3,"Poids (Kg): "+str(poids) , align="R" ,border=0)
+            self.ln(pdf.font_size +3)
+            tmpVarY = pdf.get_y()
+            self.cell(3*epw /5)
+            self.set_font("Roboto","" ,10)
+            
+            self.set_text_color(255 , 255 , 255)
+            self.multi_cell(1*epw /5, pdf.font_size +5,'Eco-contribution :\nTotal HT :\nTVA :\nTotal TTC :' ,fill=True, align='R',  border=1)
+            self.set_text_color(0 , 0 , 0)
+            self.set_y(tmpVarY)
+            self.cell(4*epw /5)
+            self.multi_cell(1*epw /5, pdf.font_size +5 ,str(round(frais_financier,2))+'\n'+str(round(totalht,2))+'\n'+str(round((totalttc - totalht),2))+'\n'+str(round((totalttc + frais_financier) ,2)) ,fill=False, align='C',  border=1)
+            self.ln( self.font_size +5)
+            pdf.multi_cell(0, pdf.font_size +5,"Fait à ______________________________________, Le _________________________"'\n'
+            '\nSignature et cachet précédés de la mention \n "BON POUR ACCORD" ''\n\n' , align='L',  border=1)
+            self.ln( self.font_size +3)
+            
+        def footer(self):
+            self.set_y(-50)
+            self.set_font("Roboto", "B" ,size=8)
+            line_height = pdf.font_size + 3
+            col_width = epw / 5  # distribute content evenly
+            data_header = ("AGENCE PARIS", "AGENCE LYON", "AGENCE MEAUX", "AGENCE AGEN", "AGENCE AVIGNON")
+            data = ("100 Avenue de choisy\n94190 Villeneuve St Georges\nTél : 01.43.89.06.00",
+                    "6 Rue des Catelines \n69720 St Laurent de Mure\nTél : 04.37.58.44.26",
+                    "2 Rue de la Briqueterie \n77470 Poincy\n Tél : 01.60.09.81.31",
+                    "89 Rue Joseph Teulère \nZ.A. de Trignac 47240 Castelculier\nTél : 05.53.48.32.94",
+                    "135 Avenue Pierre Sémard \n MIN BAT.3 84000 Avignon \nTél : 04.90.87.18.08")
+            
+            for row in data_header:
+                self.multi_cell(col_width, line_height, row, align='C',border=0, ln=3, max_line_height=self.font_size + 3)
+            self.ln(line_height)
+            self.set_font("Roboto", "I" ,size=8)
+            for row in data:
+                self.multi_cell(col_width, line_height, row,align='C', border=0, ln=3, max_line_height=pdf.font_size + 3)
+            self.set_y(-20)
+            self.cell(0, line_height, "ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000€ -N° TVA : FR59531994317",align='C', border=0, ln=3 )
+            self.cell(0, line_height, " Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386",align='C', border=0, ln=3)
+            self.set_font("Roboto", "I", 8)
+            self.set_y(-10)
+            self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", 0, 0, "R")
+    
+    pdf = PDF('P', 'mm', 'A4')
+    epw = pdf.w - 2*pdf.l_margin
+    pdf.logo = "logo.png"
+    pdf.Title = "Contrat N° : "+str(contrat_data['idcontrat']) if contrat_data['statutcont'] != "Brouillon" else "Devis N° : "+str(contrat_data['idcontrat'])
+    filename = ""
+    if contrat_data['statutcont'] != "Brouillon":
+        filename="contrat_"+str(contrat_data['idcontrat'])+"_"+str(str(contrat_data['client']['raisonsocial']) if contrat_data['client']!=False else "" )+"_"+str(date.today().strftime("%d%m%Y"))
+    else:
+        filename="devis_"+str(contrat_data['idcontrat'])+"_"+str(str(contrat_data['client']['raisonsocial']) if  contrat_data['client']!=False else "" )+"_"+str(date.today().strftime("%d%m%Y"))
 
-  if pdf.get_y()<=230:
-    pdf.multi_cell(100, 2*th)
-    pdf.cell(60) 
-    pdf.cell(10, 2*th,"Poids (Kg) :       "+str(poids_equipement))
-    pdf.ln(2*th)    
-    tmpVarX = pdf.get_x()
-    tmpVarY = pdf.get_y()
-    pdf.multi_cell(120, 4*th,"Fait à ______________________________________, Le _________________________"'\n'
-    'Signature et cachet précédés de la mention "BON POUR ACCORD" ', align='C',  border=1)
-    #Replace le positionnement du curseur coin supérieur droit de la cellule créée
-    pdf.set_font('Arial','B',size=8) 
-    pdf.set_xy(tmpVarX+141,tmpVarY)
-    pdf.cell(30, 2*th,"Eco-contribution", align='C', border=1)
-    pdf.cell(20, 2*th,str(frais_financier)+" "+chr(128), align='C', border=1)
-    pdf.ln(2*th) 
-    pdf.cell(tmpVarX+133)
-    pdf.cell(20, 2*th,fill=True, txt="Total HT :" , align="C",border=1)
-    pdf.cell(30, 2*th, str(montantTotalHT)+" "+chr(128) , align="C", border=1)
-    pdf.ln(2*th) 
-    pdf.cell(tmpVarX+133)
-    pdf.cell(20, 2*th, fill=True, txt="TVA :" , align="C",border=1)
-    pdf.cell(30, 2*th,str(totalTVA)+" "+chr(128), align="C", border=1)
-    pdf.ln(2*th) 
-    pdf.cell(tmpVarX+133)
-    pdf.cell(20, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
-    pdf.set_text_color(0, 0, 255)
-    pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
-    pdf.set_text_color(0)
-    footer(pdf)    
-    pdf.set_auto_page_break(True)   
-  else:
-    footer(pdf)
+    pdf.dte = str(date_creation.strftime("%d/%m/%Y"))
+    pdf.commercial = str(contrat_data['commercial']) if contrat_data['commercial']!= None else ""
+    if contrat_data['contacts'] and contrat_data['clientadresses']:
+        for c in contrat_data['contacts'] :
+            a =  (x for x in contrat_data['clientadresses'] if x['idadresse'] == c['adresse_idadresse'])
+            c['adresse'] = next(a)
+            if c['adresse']['type'] == 'chantier':
+                pdf.chantier = c
+            elif  c['adresse']['type'] == 'facturation':
+                pdf.facturation = c
+
+    pdf.add_font('Roboto', '', 'Roboto-Regular.ttf', uni=True)
+    pdf.add_font('Roboto', 'B', 'Roboto-Bold.ttf', uni=True)
+    pdf.add_font('Roboto', 'I', 'Roboto-Italic.ttf', uni=True)
+    pdf.set_auto_page_break(True, margin=60)
+    pdf.alias_nb_pages()
     pdf.add_page()
-    pdf.set_auto_page_break(True)
-    pdf.multi_cell(100, 2*th)
-    pdf.cell(60) 
-    pdf.cell(10, 2*th,"Poids (Kg) :       "+str(poids_equipement))
-    pdf.ln(2*th)    
-    tmpVarX = pdf.get_x()
-    tmpVarY = pdf.get_y()
-    pdf.multi_cell(120, 4*th,"Fait à ______________________________________, Le _________________________"'\n'
-    'Signature et cachet précédés de la mention "BON POUR ACCORD" ', align='C',  border=1)
-    #Replace le positionnement du curseur coin supérieur droit de la cellule créée
-    pdf.set_font('Arial','B',size=8) 
-    pdf.set_xy(tmpVarX+141,tmpVarY)
-    pdf.cell(30, 2*th,"Eco-contribution", align='C', border=1)
-    pdf.cell(20, 2*th,str(frais_financier)+" "+chr(128), align='C', border=1)
-    pdf.ln(2*th) 
-    pdf.cell(tmpVarX+133)
-    pdf.cell(20, 2*th,fill=True, txt="Total HT :" , align="C",border=1)
-    pdf.cell(30, 2*th, str(montantTotalHT)+" "+chr(128) , align="C", border=1)
-    pdf.ln(2*th) 
-    pdf.cell(tmpVarX+133)
-    pdf.cell(20, 2*th, fill=True, txt="TVA :" , align="C",border=1)
-    pdf.cell(30, 2*th,str(totalTVA)+" "+chr(128), align="C", border=1)
-    pdf.ln(2*th) 
-    pdf.cell(tmpVarX+133)
-    pdf.cell(20, 2*th,fill=True, txt="Total TTC :", align="C",border=1)
-    pdf.set_text_color(0, 0, 255)
-    pdf.cell(30, 2*th, txt=str(montantTotalHT+float(frais_financier)+totalTVA)+" "+chr(128) , align="C", border=1)
-    pdf.set_text_color(0)
-    footer(pdf) 
-    pdf.set_auto_page_break(True)   
-  response = make_response(pdf.output(dest='S'))
-  response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
-  response.headers.set('Content-Type', 'application/pdf')
-  return response
+    pdf.utilisation()
+    pdf.tabledata()
+    pdf.total()
+    pdf.set_font("Roboto", size=12)
+    response = make_response(pdf.output(dest='S'))
+    response.headers.set('Content-Disposition', 'inline', filename=filename + '.pdf')
+    response.headers.set('Content-Type', 'application/pdf')
+    return response
 
   
       
