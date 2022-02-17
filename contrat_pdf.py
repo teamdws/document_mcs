@@ -53,10 +53,12 @@ def contrat_pdf():
             self.image( self.logo , 10, 8, 33)
             self.set_font("Roboto","B", size=18)
             self.cell(80)
+            
             self.cell(0, 10, self.Title, 0, 0, "R")
             self.set_font("Roboto","", size=10)
             self.ln()
             self.cell(0, 0, "Date : "+self.dte+" Suivi par : "+self.commercial, 0, 0, "R")
+            self.code39( str(contrat_data['idcontrat']), x= pdf.l_margin  , y=25, w=1, h=5)
             self.ln(20)
             
         def utilisation(self):
