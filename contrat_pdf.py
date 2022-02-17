@@ -67,7 +67,7 @@ def contrat_pdf():
             self.set_text_color(0 , 0 , 0)
             self.ln(self.font_size + 5)
             tmpVarX = self.get_x() + epw/3
-            if self.chantier and self.chantier['adresse']:
+            if hasattr( self, 'chantier') and self.chantier['adresse']:
                 if self.chantier['adresse']['TITRE']:
                     self.cell(0,  self.font_size + 2, self.chantier['adresse']['TITRE'], 0, 1)
                 self.cell(0,  self.font_size +2 , str(self.chantier['adresse']['STREET_NUMBER']) +" "+ str(self.chantier['adresse']['ROUTE']) , 0, 1)
@@ -80,7 +80,7 @@ def contrat_pdf():
             self.cell(epw/3, self.font_size + 5, fill=True, txt="CLIENT N° : "+str(contrat_data['client']['idclient']) , align="C", border=0)
             self.set_text_color(0 , 0 , 0)
             self.set_xy(tmpVarX+epw/3,tmpVarY+ self.font_size + 5)
-            if self.facturation and self.facturation['adresse']:
+            if hasattr( self, 'facturation') and self.facturation['adresse']:
                 if self.facturation['adresse']['TITRE']:
                     self.cell(0,  self.font_size + 2, str(contrat_data['client']['raisonsocial']), 0, 1)
                     self.set_x(tmpVarX+ epw/3)
@@ -202,27 +202,32 @@ def contrat_pdf():
                         self.ln(0) 
                     self.set_font("Roboto","" ,12)
         def total(self):
-            self.cell(0, pdf.font_size +3,"Poids (Kg): "+str(poids) , align="R" ,border=0)
-            self.ln(pdf.font_size +3)
-            tmpVarY = pdf.get_y()
-            self.cell(3*epw /5)
-            self.set_font("Roboto","" ,10)
+            self.cell(0, self.font_size +3,"Poids (Kg): "+str(poids) , align="R" ,border=0)
+            self.ln(self.font_size +3)
             
+            self.set_font("Roboto","" ,10)
+            if self.will_page_break((self.font_size +5) * 8):
+                self.ln((self.font_size +5) * 8)
+             
+            self.cell(3*epw /5)
+            tmpVarY = pdf.get_y()
             self.set_text_color(255 , 255 , 255)
-            self.multi_cell(1*epw /5, pdf.font_size +5,'Eco-contribution :\nTotal HT :\nTVA :\nTotal TTC :' ,fill=True, align='R',  border=1)
+            self.multi_cell(epw /5, self.font_size +5,'Eco-contribution :\nTotal HT :\nTVA :\nTotal TTC :' ,fill=True, align='R',  border=1)
             self.set_text_color(0 , 0 , 0)
-            self.set_y(tmpVarY)
+            self.set_y(tmpVarY )
             self.cell(4*epw /5)
-            self.multi_cell(1*epw /5, pdf.font_size +5 ,str(round(frais_financier,2))+'\n'+str(round(totalht,2))+'\n'+str(round((totalttc - totalht),2))+'\n'+str(round((totalttc + frais_financier) ,2)) ,fill=False, align='C',  border=1)
+            self.multi_cell(epw /5, self.font_size +5 ,str(round(frais_financier,2))+'\n'+str(round(totalht,2))+'\n'+str(round((totalttc - totalht),2))+'\n'+str(round((totalttc + frais_financier) ,2)) ,fill=False, align='C',  border=1)
             self.ln( self.font_size +5)
-            pdf.multi_cell(0, pdf.font_size +5,"Fait à ______________________________________, Le _________________________"'\n'
+            if self.will_page_break((self.font_size +5) * 4):
+                self.ln((self.font_size +5) * 4)
+            self.multi_cell(0, self.font_size +5,"Fait à ______________________________________, Le _________________________"'\n'
             '\nSignature et cachet précédés de la mention \n "BON POUR ACCORD" ''\n\n' , align='L',  border=1)
             self.ln( self.font_size +3)
             
         def footer(self):
             self.set_y(-50)
             self.set_font("Roboto", "B" ,size=8)
-            line_height = pdf.font_size + 3
+            line_height = self.font_size + 3
             col_width = epw / 5  # distribute content evenly
             data_header = ("AGENCE PARIS", "AGENCE LYON", "AGENCE MEAUX", "AGENCE AGEN", "AGENCE AVIGNON")
             data = ("100 Avenue de choisy\n94190 Villeneuve St Georges\nTél : 01.43.89.06.00",
