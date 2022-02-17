@@ -50,6 +50,7 @@ def contrat_pdf():
 
         def header(self):
             # Rendering logo:
+            
             self.image( self.logo , 10, 8, 33)
             self.set_font("Roboto","B", size=18)
             self.cell(80)
@@ -58,11 +59,13 @@ def contrat_pdf():
             self.set_font("Roboto","", size=10)
             self.ln()
             self.cell(0, 0, "Date : "+self.dte+" Suivi par : "+self.commercial, 0, 0, "R")
-            self.code39( str(contrat_data['idcontrat']), x= pdf.l_margin  , y=25, w=1, h=5)
             self.ln(20)
             
         def utilisation(self):
+            self.code39( str(contrat_data['idcontrat']), x= pdf.l_margin  , y=25, w=1, h=5)
+
             tmpVarY = self.get_y()
+            
             self.set_fill_color(222 , 85 , 90)
             self.set_text_color(255 , 255 , 255)
             self.cell(epw/3, self.font_size + 5, fill=True, txt="Lieu d'utilisation ", align="C", border=0)
