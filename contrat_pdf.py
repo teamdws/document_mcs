@@ -67,6 +67,7 @@ def contrat_pdf():
     response.headers.set('Content-Type', 'application/pdf')
     return response
 
+
   
       
 if __name__ == '__main__': 

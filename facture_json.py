@@ -40,7 +40,7 @@ def footer(pdf):
   pdf.ln(th*2)
   pdf.set_font('Arial','I',8)  
   #pdf.multi_cell(190, 5, txt="SARL AU CAPITAL DE 301200 Fax : 01.43.89.64.35 Email : contact@stmp-location.com \nR.C.S B 389 856 261 00026 - APE 46669 INTRA T.V.A FR 25 389 856 261", align = 'C')
-  pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" -N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386", align = 'C')
+  pdf.multi_cell(190, 3, txt="ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000"+chr(128)+" - N° TVA : FR59531994317\n Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 - Fax : 0970616386", align = 'C')
   pdf.cell(0, 10, 'Page %s' % pdf.page_no(), 0, 0, 'C')
 
 @facture.route('pdf',methods = ['POST', 'GET'])
@@ -51,16 +51,17 @@ def facture_pdf():
     #URL_FACTURE = "https://applocation.directwebsolutions.fr/facture?id="+str(id_facture)
     facture_data_response= requests.get(URL_FACTURE)
     facture_data= json.loads(facture_data_response.content.decode('utf-8'))
-    #ligne_facture_response=requests.get("https://applocation.directwebsolutions.fr/lignefactues?query=%7B%22facture_idfacture%22:"+str(id_facture)+"}&ascending=1&byColumn=1&type=1")
-    ligne_facture_response=requests.get("https://back-mcs-v1.herokuapp.com/web/lignefactues?query=%7B%22facture_idfacture%22:"+str(id_facture)+"}&ascending=1&byColumn=1&type=1")
+
+    ligne_facture_response=requests.get("https://applocation.directwebsolutions.fr/lignefactues?query=%7B%22facture_idfacture%22:"+str(id_facture)+"}&ascending=1&byColumn=1&type=1")
+    #ligne_facture_response=requests.get("https://back-mcs-v1.herokuapp.com/web/lignefactues?query=%7B%22facture_idfacture%22:"+str(id_facture)+"}&ascending=1&byColumn=1&type=1")
     ligne_facture= json.loads(ligne_facture_response.content.decode('utf-8'))
-    #API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(facture_data['idcontrat'])
-    API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(facture_data['idcontrat'])
+    API_CONTRAT = "https://applocation.directwebsolutions.fr/web/contrat?id="+str(facture_data['idcontrat'])
+    #API_CONTRAT = "https://back-mcs-v1.herokuapp.com/web/contrat?id="+str(facture_data['idcontrat'])
     contrat_data_response= requests.get(API_CONTRAT)
     contrat_data= json.loads(contrat_data_response.content.decode('utf-8'))
     if contrat_data['client']!=False:
-      #client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
-      client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
+      client_adresse_response= requests.get("https://applocation.directwebsolutions.fr/web/client?id="+str(contrat_data['client']['idclient']))
+      #client_adresse_response= requests.get("https://back-mcs-v1.herokuapp.com/web/client?id="+str(contrat_data['client']['idclient']))
       client_adresse= json.loads(client_adresse_response.content.decode('utf-8')) 
     #---------------client adresses --------------------
     pdf = FPDF()
@@ -94,9 +95,9 @@ def facture_pdf():
             if client_adresse['contactes'][k]['type']=="facturation":
               contact_facturation=client_adresse['contactes'][k]  
     #-----------PDF creation
-    if facture_data['avoir'] == 0: filename="facture_"+str(contrat_data['idcontrat'])+"_"+str(client_adresse['raisonsocial'])+"_"+str(date.today().strftime("%d/%m/%Y"));
+    if facture_data['avoir'] == "0": filename="facture_"+str(contrat_data['idcontrat'])+"_"+str(client_adresse['raisonsocial'])+"_"+str(date.today().strftime("%d/%m/%Y"));
     else: filename="avoir_"+str(contrat_data['idcontrat'])+"_"+str(client_adresse['raisonsocial'])+"_"+str(date.today().strftime("%d/%m/%Y"))
-    type_document="Facture   " if facture_data['avoir'] == 0 else "Avoir   "
+    type_document="Facture   " if facture_data['avoir'] == "0" else "Avoir   "
     frais_financier=facture_data['fraisfinancier'] if facture_data['fraisfinancier'] != None else 0
     #logo------------------------------------
     pdf.image("./logo.png", 75, 8, 60)
@@ -134,11 +135,11 @@ def facture_pdf():
     pdf.cell(col_width, 2*th, txt=str(contrat_data['compte_comptable']),align='C', border=1)    
     pdf.cell(40)
     pdf.set_font('Arial','B',8) 
-    pdf.cell(col_width, 2*th, txt="Contact :"+str(contact_facturation['civilite'])+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'], align = 'A')
+    pdf.cell(col_width, 2*th, txt="Contact : 	"+str(contact_facturation['civilite'])+ " " +contact_facturation['prenom']+ " " +contact_facturation['nom'], align = 'A')
     pdf.ln(3)
     pdf.cell(121.5)
     pdf.set_font('Arial','B',8) 
-    pdf.cell(col_width, 2*th, txt="Tel :"+str(contact_facturation['telmobile']), align = 'A')
+    pdf.cell(col_width, 2*th, txt="Tel : "+str(contact_facturation['telmobile']), align = 'A')
     pdf.ln(20)
     pdf.set_font('Arial','B',10) 
     pdf.cell(epw/4, 2*th, fill=True, txt="Lieu utilisation" , align='C', border=1)
@@ -150,7 +151,7 @@ def facture_pdf():
     pdf.cell(epw/4, 2*th, str(str(adresse_chantier['TITRE']) if len(adresse_chantier)>0 else ""), align='C', border=1)
     pdf.cell(epw/4, 2*th, str(date_debut.strftime("%d/%m/%Y")), align='C', border=1)
     pdf.cell(epw/4, 2*th, str(date_fin.strftime("%d/%m/%Y")), align='C', border=1)
-    pdf.cell(epw/4, 2*th, str(duree.days+1)+" Jours", align='C', border=1)
+    pdf.cell(epw/4, 2*th, str(duree.days+1)+" jours", align='C', border=1)
     pdf.ln(10)
     #line of invoice--------------------------
     pdf.cell(  epw/15, 2*th, fill=True, txt="Qté", align='C', border=1)
