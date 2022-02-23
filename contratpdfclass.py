@@ -134,7 +134,7 @@ class PDF(FPDF, HTMLMixin):
                 self.cell(  self.epw/16, self.font_size +3, fill=True, txt="Qté", align='C', border=1)
                 self.cell(  self.epw/8,  self.font_size +3, fill=True, txt="Ref",  align='C', border=1) 
                 self.cell(  (9*self.epw)/16, self.font_size +3, fill=True, txt="Description",align='C', border=1)
-                self.cell(  self.epw/8, self.font_size +3, fill=True, txt="PU BRUT",  align='C', border=1)
+                self.cell(  self.epw/8, self.font_size +3, fill=True, txt="Prix jour",  align='C', border=1)
                 self.cell(  self.epw/8, self.font_size +3, fill=True, txt="MT HT ",  align='C', border=1) 
                 self.set_text_color(0 , 0 , 0)
                 self.ln( self.font_size +3)
