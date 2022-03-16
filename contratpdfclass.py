@@ -194,8 +194,8 @@ class PDF(FPDF, HTMLMixin):
             self.ln( self.font_size +3)
             
         def footer(self):
-            self.set_y(-50)
-            self.set_font("Roboto", "B" ,size=8)
+            #self.set_y(-50)
+            #self.set_font("Roboto", "B" ,size=8)
             line_height = self.font_size + 3
             col_width = self.epw / 5  # distribute content evenly
             data_header = ("AGENCE PARIS", "AGENCE LYON", "AGENCE MEAUX", "AGENCE AGEN", "AGENCE AVIGNON")
@@ -205,12 +205,12 @@ class PDF(FPDF, HTMLMixin):
                     "89 Rue Joseph Teulère \nZ.A. de Trignac 47240 Castelculier\nTél : 05.53.48.32.94",
                     "135 Avenue Pierre Sémard \n MIN BAT.3 84000 Avignon \nTél : 04.90.87.18.08")
             
-            for row in data_header:
-                self.multi_cell(col_width, line_height, row, align='C',border=0, ln=3, max_line_height=self.font_size + 3)
+            #for row in data_header:
+            #    self.multi_cell(col_width, line_height, row, align='C',border=0, ln=3, max_line_height=self.font_size + 3)
             self.ln(line_height)
             self.set_font("Roboto", "I" ,size=8)
-            for row in data:
-                self.multi_cell(col_width, line_height, row,align='C', border=0, ln=3, max_line_height=self.font_size + 3)
+            #for row in data:
+            #    self.multi_cell(col_width, line_height, row,align='C', border=0, ln=3, max_line_height=self.font_size + 3)
             self.set_y(-20)
             self.cell(0, line_height, "ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000€ -N° TVA : FR59531994317",align='C', border=0, ln=3 )
             self.cell(0, line_height, " Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386",align='C', border=0, ln=3)
