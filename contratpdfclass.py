@@ -196,7 +196,7 @@ class PDF(FPDF, HTMLMixin):
         def footer(self):
             #self.set_y(-50)
             #self.set_font("Roboto", "B" ,size=8)
-            #line_height = self.font_size + 3
+            line_height = self.font_size + 3
             col_width = self.epw / 5  # distribute content evenly
             data_header = ("AGENCE PARIS", "AGENCE LYON", "AGENCE MEAUX", "AGENCE AGEN", "AGENCE AVIGNON")
             data = ("100 Avenue de choisy\n94190 Villeneuve St Georges\nTél : 01.43.89.06.00",
