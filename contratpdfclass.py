@@ -207,8 +207,8 @@ class PDF(FPDF, HTMLMixin):
             
             #for row in data_header:
             #    self.multi_cell(col_width, line_height, row, align='C',border=0, ln=3, max_line_height=self.font_size + 3)
-            #self.ln(line_height)
-            #self.set_font("Roboto", "I" ,size=8)
+            self.ln(line_height)
+            self.set_font("Roboto", "I" ,size=8)
             #for row in data:
             #    self.multi_cell(col_width, line_height, row,align='C', border=0, ln=3, max_line_height=self.font_size + 3)
             self.set_y(-20)
