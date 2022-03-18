@@ -25,7 +25,7 @@ class PDF(FPDF, HTMLMixin):
             self.cell(0, 10, self.Title, 0, 0, "R")
             self.set_font("Roboto","", size=10)
             self.ln()
-            self.cell(0, 0, "Date : "+self.dte+" Suivi par : "+self.commercial, 0, 0, "R")
+            self.cell(0, 0, "Date : "+self.dte+" Suivi par : "+self.commercial.capitalize(), 0, 0, "R")
             self.ln(20)
             
         def utilisation(self):
