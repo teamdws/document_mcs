@@ -47,7 +47,7 @@ def facture_pdf():
     pdf.add_font('Roboto', '', 'Roboto-Regular.ttf', uni=True)
     pdf.add_font('Roboto', 'B', 'Roboto-Bold.ttf', uni=True)
     pdf.add_font('Roboto', 'I', 'Roboto-Italic.ttf', uni=True)
-    pdf.set_auto_page_break(True, margin=60)
+    pdf.set_auto_page_break(True, margin=40)
     pdf.alias_nb_pages()
     pdf.add_page()
     pdf.utilisation()
