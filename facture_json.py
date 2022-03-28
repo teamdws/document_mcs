@@ -12,11 +12,13 @@ facture=Blueprint("facture", __name__)
 
 @facture.route('pdf',methods = ['POST', 'GET'])
 def facture_pdf():
+
    
     pdf = PDF('P', 'mm', 'A4')
     cipher = AESCipher('12lrtkjhy', 'muni1yyyft23')
     facturedt = cipher.decrypt(base64.b64decode(request.form.get('facture'))).decode("utf-8")
     pdf.facture_data= json.loads(facturedt)
+
 
     pdf.logo = "logo.png"
     type_document="Facture" if str(pdf.facture_data['avoir']) == "0" else "Avoir"
