@@ -19,7 +19,7 @@ def facture_pdf():
     pdf.facture_data= json.loads(facturedt)
 
     pdf.logo = "logo.png"
-    type_document="Facture" if pdf.facture_data['avoir'] == "0" else "Avoir"
+    type_document="Facture" if str(pdf.facture_data['avoir']) == "0" else "Avoir"
     filename = type_document+"_"+ str(pdf.facture_data['idfacture'])+"_"+str(pdf.facture_data['leclient']['raisonsocial'])+"_"+str(date.today().strftime("%d/%m/%Y"));
     frais_financier= pdf.facture_data['fraisfinancier'] if pdf.facture_data['fraisfinancier'] != None else 0
     pdf.date_limite= str(date.fromisoformat(pdf.facture_data['date_limite']).strftime("%d/%m/%Y")) if pdf.facture_data['date_limite'] != None else ""
@@ -29,10 +29,13 @@ def facture_pdf():
     pdf.duree=pdf.date_fin - pdf.date_debut 
     pdf.dte = str(pdf.date_creation.strftime("%d/%m/%Y"))
     pdf.contrat = ""
+    pdf.boncommande = ""
     try:
        if 'contrat' in pdf.facture_data :
         num =  pdf.facture_data['contrat']['idagence'] 
         pdf.contrat = "N° Contrat : "+str(pdf.facture_data['contrat']['idcontrat'] )
+        pdf.boncommande =  "Bon de commande : "+str(pdf.facture_data['contrat']['boncommande'] )  if pdf.facture_data['contrat']['boncommande'] != None else ""
+        
        else : num = 0
     except AttributeError: num = 0
     

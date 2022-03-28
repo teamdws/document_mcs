@@ -66,7 +66,14 @@ class PDF(FPDF, HTMLMixin):
                 self.cell(0,  self.font_size +2 ,"Contact : "+str(self.facture_data['contact']['civilite'])+ " " +str(self.facture_data['contact']['prenom'])+ " " +str(self.facture_data['contact']['nom']), 0, 1)
                 self.set_x(tmpVarX+self.epw/3)
                 self.cell(0,  self.font_size +2 ,"Tél : "+str(self.facture_data['contact']['telmobile']), 0, 1)
-            self.ln(7)
+            self.ln(4)
+            self.set_draw_color(222 , 85 , 90)
+            if(self.boncommande != ""):
+                self.multi_cell(0, self.font_size +3,str(self.boncommande), border=1)
+                self.ln(0)
+            if(self.facture_data['titre'] != ""):
+                self.multi_cell(0, self.font_size +3,"Objet : "+str(self.facture_data['titre']), border=1)
+            self.ln(4)    
             self.set_font("Roboto", size=8)
             line_height = self.font_size * 2
             col_width = self.epw / 5
