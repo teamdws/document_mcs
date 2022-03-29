@@ -186,7 +186,7 @@ class PDF(FPDF, HTMLMixin):
             """
             self.set_y(-20)
             self.cell(0, line_height, "ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000€ - N° TVA : FR59531994317",align='C', border=0, ln=3 )
-            self.cell(0, line_height, " Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 -Fax : 0970616386",align='C', border=0, ln=3)
+            self.cell(0, line_height, " Web : www.etg-location.fr - Email : etglocationparis@gmail.com - Tél : 0553483294 - Fax : 0970616386",align='C', border=0, ln=3)
             self.set_font("Roboto", "I", 8)
             self.set_y(-10)
             self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", 0, 0, "R")
