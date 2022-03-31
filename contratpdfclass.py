@@ -114,7 +114,7 @@ class PDF(FPDF, HTMLMixin):
                 if  n['serialisable']==0:
                     ref = str(n['reference']) if n['reference']!=None else "" 
                 elif n['serialisable']==1 and n['equipement_idequipement'] !=None:
-                    a =  (x for x in self.contrat_data['detailequipements'] if n['idcategorie']== x['categorie_idcategorie'])
+                    a =  (x for x in self.contrat_data['detailequipements'] if n['equipement_idequipement']== x['idequipement'])
                     ref = (next(a))['refinterne']
                 s['reference'] = ref
                 s['denomination'] = n['denomination'] if n['denomination'] !=None else " "
