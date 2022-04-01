@@ -41,7 +41,7 @@ class PDF(FPDF, HTMLMixin):
                     6:""}
            
             
-            self.code39( "*"+str(self.contrat_data['idcontrat'])+"*", x= self.l_margin  , y=25, w=1, h=5)
+            self.code39( "*"+str(self.contrat_data['idcontrat'])+"*", x= self.l_margin  , y=25, w=2, h=10)
 
             tmpVarY = self.get_y()
             
