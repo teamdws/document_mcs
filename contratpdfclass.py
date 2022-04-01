@@ -29,7 +29,7 @@ class PDF(FPDF, HTMLMixin):
             self.ln(20)
             
         def utilisation(self):
-            self.code39( str(self.contrat_data['idcontrat']), x= self.l_margin  , y=25, w=1, h=5)
+            self.code39( "*"+str(self.contrat_data['idcontrat'])+"*", x= self.l_margin  , y=25, w=1, h=5)
 
             tmpVarY = self.get_y()
             
@@ -111,9 +111,9 @@ class PDF(FPDF, HTMLMixin):
                 self.poids = self.poids + s['Qte'] * s['poids']
 
                 ref = ""
-                if  n['serialisable']==0:
+                if  int(n['serialisable'])==0:
                     ref = str(n['reference']) if n['reference']!=None else "" 
-                elif n['serialisable']==1 and n['equipement_idequipement'] !=None:
+                elif int(n['serialisable'])==1 and n['equipement_idequipement'] !=None:
                     a =  (x for x in self.contrat_data['detailequipements'] if n['equipement_idequipement']== x['idequipement'])
                     ref = (next(a))['refinterne']
                 s['reference'] = ref
@@ -164,14 +164,14 @@ class PDF(FPDF, HTMLMixin):
                         self.ln( self.font_size +3)
                     self.set_font("Roboto","" ,12)
                 if len(self.contrat_data['mentions'])>=0:
-                    
-                    self.set_font("Roboto","B" ,12)
+                    self.contrat_data['mentions'].sort(key=lambda x: int(x['position']), reverse=False)
+                    self.set_font("Roboto","B" ,9)
                     for i in range(len(self.contrat_data['mentions'])):
                         self.multi_cell(  self.epw, self.font_size +3, fill=False, txt=  str(self.contrat_data['mentions'][i]['contenuoption']),  align='L', border=1) 
                         self.ln(0) 
                     self.set_font("Roboto","" ,12)
         def total(self):
-            self.cell(0, self.font_size +3,"self.poids (Kg): "+str(self.poids) , align="R" ,border=0)
+            self.cell(0, self.font_size +3,"poids (Kg): "+str(self.poids) , align="R" ,border=0)
             self.ln(self.font_size +3)
             
             self.set_font("Roboto","" ,10)
