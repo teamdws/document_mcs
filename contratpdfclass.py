@@ -212,8 +212,11 @@ class PDF(FPDF, HTMLMixin):
             #for row in data:
             #    self.multi_cell(col_width, line_height, row,align='C', border=0, ln=3, max_line_height=self.font_size + 3)
             self.set_y(-20)
-            self.cell(0, line_height, "ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000€ - N° TVA : FR59531994317",align='C', border=0, ln=3 )
-            self.cell(0, line_height, " Web : www.etg-location.fr - Email : contact@etg-location.fr - Tél : 0553483294 - Fax : 0970616386",align='C', border=0, ln=3)
+            #self.cell(0, line_height, "ETG LOCATION - 531 994 317 RCS Agen - APE : 7732Z - SARL au capital de 1000€ - N° TVA : FR59531994317",align='C', border=0, ln=3 )
+            #self.cell(0, line_height, " Web : www.etg-location.fr - Email : contact@etg-location.fr - Tél : 0553483294 - Fax : 0970616386",align='C', border=0, ln=3)
+            self.cell(0, line_height, "ETG Location - siège social situé à 100 avenue de Choisy 94 190 Villenueve-Saint-Georges",align='C', border=0, ln=3 )
+            self.cell(0, line_height, "Société au capital de 1000€ Immatriculée au registre du commerce et de sociétés sous le numéro  531 994 317 00026 RCS Créteil  code APE 7732Z",align='C', border=0, ln=3)
+        
             self.set_font("Roboto", "I", 8)
             self.set_y(-10)
             self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", 0, 0, "R")
