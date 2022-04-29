@@ -2,7 +2,7 @@ node {
    stage('Get Source') {
       // copy source code from local file system and test
       // for a Dockerfile to build the Docker image
-      git ('https://github.com/upasana-mittal/flask-dockerized-jenkins.git')
+      git ('https://github.com/teamdws/document_mcs.git')
       if (!fileExists("Dockerfile")) {
          error('Dockerfile missing.')
       }
