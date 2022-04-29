@@ -14,4 +14,4 @@ app.register_blueprint(bon_livraison, url_prefix="/bon/livraison")
  #   return "hello"
 
 if __name__ == '__main__':
-  app.run(debug=True)
+  app.run(debug=True, host="0.0.0.0")
