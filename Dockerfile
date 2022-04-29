@@ -1,4 +1,4 @@
-FROM python:python-3.8.6
+FROM python:python-3.8.10
 COPY .  /flask_project
 WORKDIR /flask_project
 RUN pip install -r requirements.txt
