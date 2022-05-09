@@ -46,6 +46,7 @@ class PDF(FPDF, HTMLMixin):
                 self.cell(0,  self.font_size +2 ,str(self.chantier['adresse']['codepostal']) +"    "+str(self.chantier['adresse']['ville']), 0, 1)
                 self.cell(0,  self.font_size +2 ,"Contact : "+str(self.chantier['civilite'])+ " " +self.chantier['prenom']+ " " +self.chantier['nom'], 0, 1)
                 self.cell(0,  self.font_size +2 ,"Tél : "+str(self.chantier['telmobile']), 0, 1)
+            tmpVarYchatier = self.get_y()
             self.set_xy(tmpVarX+ self.epw/3,tmpVarY)
             self.set_fill_color(222 , 85 , 90)
             self.set_text_color(255 , 255 , 255)
@@ -65,8 +66,11 @@ class PDF(FPDF, HTMLMixin):
                 self.cell(0,  self.font_size +2 ,"Contact : "+str(self.facturation['civilite'])+ " " +self.facturation['prenom']+ " " +self.facturation['nom'], 0, 1)
                 self.set_x(tmpVarX+self.epw/3)
                 self.cell(0,  self.font_size +2 ,"Tél : "+str(self.facturation['telmobile']), 0, 1)
+            tmpVarY = self.get_y() if  self.get_y() > tmpVarYchatier else tmpVarYchatier
+            self.set_y(tmpVarY)
             self.ln(7)
             line_height = self.font_size * 2
+            
             col_width = self.epw / 4
             TABLE_COL_NAMES = ("Date de début du contrat", "Date de fin du contrat", "Période de location", "Facturation sur")
             TABLE_DATA = (str(self.date_debut.strftime("%d/%m/%Y")), str(self.date_fin.strftime("%d/%m/%Y")), str(self.contrat_data['nbdays'])+" Jours", str(str(self.contrat_data['frequencefacturation']) if self.contrat_data['frequencefacturation']!=None else "")+"  mois")
