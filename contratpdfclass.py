@@ -29,7 +29,7 @@ class PDF(FPDF, HTMLMixin):
             self.ln(20)
             
         def utilisation(self):
-            self.code39( str(self.contrat_data['idcontrat']), x= self.l_margin  , y=25, w=1, h=5)
+            self.code39( "*"+str(self.contrat_data['idcontrat'])+"*", x= self.l_margin  , y=25, w=2, h=10)
 
             tmpVarY = self.get_y()
             
@@ -46,6 +46,7 @@ class PDF(FPDF, HTMLMixin):
                 self.cell(0,  self.font_size +2 ,str(self.chantier['adresse']['codepostal']) +"    "+str(self.chantier['adresse']['ville']), 0, 1)
                 self.cell(0,  self.font_size +2 ,"Contact : "+str(self.chantier['civilite'])+ " " +self.chantier['prenom']+ " " +self.chantier['nom'], 0, 1)
                 self.cell(0,  self.font_size +2 ,"Tél : "+str(self.chantier['telmobile']), 0, 1)
+            tmpVarYchatier = self.get_y()
             self.set_xy(tmpVarX+ self.epw/3,tmpVarY)
             self.set_fill_color(222 , 85 , 90)
             self.set_text_color(255 , 255 , 255)
@@ -65,8 +66,11 @@ class PDF(FPDF, HTMLMixin):
                 self.cell(0,  self.font_size +2 ,"Contact : "+str(self.facturation['civilite'])+ " " +self.facturation['prenom']+ " " +self.facturation['nom'], 0, 1)
                 self.set_x(tmpVarX+self.epw/3)
                 self.cell(0,  self.font_size +2 ,"Tél : "+str(self.facturation['telmobile']), 0, 1)
+            tmpVarY = self.get_y() if  self.get_y() > tmpVarYchatier else tmpVarYchatier
+            self.set_y(tmpVarY)
             self.ln(7)
             line_height = self.font_size * 2
+            
             col_width = self.epw / 4
             TABLE_COL_NAMES = ("Date de début du contrat", "Date de fin du contrat", "Période de location", "Facturation sur")
             TABLE_DATA = (str(self.date_debut.strftime("%d/%m/%Y")), str(self.date_fin.strftime("%d/%m/%Y")), str(self.contrat_data['nbdays'])+" Jours", str(str(self.contrat_data['frequencefacturation']) if self.contrat_data['frequencefacturation']!=None else "")+"  mois")
@@ -111,10 +115,10 @@ class PDF(FPDF, HTMLMixin):
                 self.poids = self.poids + s['Qte'] * s['poids']
 
                 ref = ""
-                if  n['serialisable']==0:
+                if  int(n['serialisable'])==0:
                     ref = str(n['reference']) if n['reference']!=None else "" 
-                elif n['serialisable']==1 and n['equipement_idequipement'] !=None:
-                    a =  (x for x in self.contrat_data['detailequipements'] if n['idcategorie']== x['categorie_idcategorie'])
+                elif int(n['serialisable'])==1 and n['equipement_idequipement'] !=None:
+                    a =  (x for x in self.contrat_data['detailequipements'] if n['equipement_idequipement']== x['idequipement'])
                     ref = (next(a))['refinterne']
                 s['reference'] = ref
                 s['denomination'] = n['denomination'] if n['denomination'] !=None else " "
@@ -164,14 +168,14 @@ class PDF(FPDF, HTMLMixin):
                         self.ln( self.font_size +3)
                     self.set_font("Roboto","" ,12)
                 if len(self.contrat_data['mentions'])>=0:
-                    
-                    self.set_font("Roboto","B" ,12)
+                    self.contrat_data['mentions'].sort(key=lambda x: int(x['position']), reverse=False)
+                    self.set_font("Roboto","B" ,9)
                     for i in range(len(self.contrat_data['mentions'])):
                         self.multi_cell(  self.epw, self.font_size +3, fill=False, txt=  str(self.contrat_data['mentions'][i]['contenuoption']),  align='L', border=1) 
                         self.ln(0) 
                     self.set_font("Roboto","" ,12)
         def total(self):
-            self.cell(0, self.font_size +3,"self.poids (Kg): "+str(self.poids) , align="R" ,border=0)
+            self.cell(0, self.font_size +3,"poids (Kg): "+str(self.poids) , align="R" ,border=0)
             self.ln(self.font_size +3)
             
             self.set_font("Roboto","" ,10)
@@ -216,7 +220,7 @@ class PDF(FPDF, HTMLMixin):
             #self.cell(0, line_height, " Web : www.etg-location.fr - Email : contact@etg-location.fr - Tél : 0553483294 - Fax : 0970616386",align='C', border=0, ln=3)
             self.cell(0, line_height, "ETG Location - siège social situé à 100 avenue de Choisy 94 190 Villenueve-Saint-Georges",align='C', border=0, ln=3 )
             self.cell(0, line_height, "Société au capital de 1000€ Immatriculée au registre du commerce et de sociétés sous le numéro  531 994 317 00026 RCS Créteil  code APE 7732Z",align='C', border=0, ln=3)
-            
+
             self.set_font("Roboto", "I", 8)
             self.set_y(-10)
             self.cell(0, 10, f"Page {self.page_no()}/{{nb}}", 0, 0, "R")

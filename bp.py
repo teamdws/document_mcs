@@ -11,17 +11,17 @@ from fpdf import FlexTemplate
 import functools
 sys.path.append(".")
 from myencryptor import AESCipher
-from blclass import PDF
+from bpclass import PDF
 
 
-bon_livraison=Blueprint("bon_livraison", __name__)
+bp=Blueprint("bp", __name__)
         
-@bon_livraison.route('/pdf',methods = ['POST', 'GET'])
+@bp.route('/pdf',methods = ['POST', 'GET'])
 def contrat_pdf():
 
     pdf = PDF('P', 'mm', 'A4')
     cipher = AESCipher('12lrtkjhy', 'muni1yyyft23')
-    pdf.idlivraison = request.args.get('id')
+    pdf.idagence = request.args.get('idagence')
     contratdt= cipher.decrypt(base64.b64decode(request.form.get('contrat'))).decode("utf-8")
     pdf.contrat_data= json.loads(contratdt)
     pdf.date_creation=date.fromisoformat(pdf.contrat_data['datedebcont']) if pdf.contrat_data['statutcont'] != "Brouillon" else date.today()
@@ -31,16 +31,13 @@ def contrat_pdf():
     pdf.poids = float(0)   
     pdf.totalht = 0   
     pdf.totalttc = 0 
-    pdf.livraison_data =  [liv for liv in pdf.contrat_data['livraisons'] if str(liv['idlivraison']) == str(pdf.idlivraison)][0]
-    pdf.livraison_data['date'] = date.fromisoformat(pdf.livraison_data['date']).strftime("%d/%m/%Y")
-    
     pdf.epw()
     epw = pdf.w - 2*pdf.l_margin
     pdf.logo = "logo.png"
-    pdf.Title = "Bon de "+str(pdf.livraison_data['type'].upper())+" : "+str(pdf.idlivraison) 
+    pdf.Title = "Bon de Préparation : "+str(pdf.idagence)
     
     filename = ""
-    filename="Bon_de_"+str(pdf.livraison_data['type'].upper())+"_"+str(pdf.idlivraison)+"_contrat_"+str(pdf.contrat_data['idcontrat'])
+    filename="Bon_de_Preparation_"+str(pdf.idagence)+"_contrat_"+str(pdf.contrat_data['idcontrat'])
    
     pdf.dte = str(pdf.date_creation.strftime("%d/%m/%Y"))
     pdf.commercial = str(pdf.contrat_data['commercial']) if pdf.contrat_data['commercial']!= None else ""
@@ -62,7 +59,8 @@ def contrat_pdf():
     pdf.utilisation()
     pdf.tabledata()
     pdf.total()
-    
+    pdf.set_font("Roboto", size=12)
+    pdf.tickets()
     response = make_response(pdf.output(dest='S'))
     response.headers.set('Content-Disposition', 'attachment', filename=filename + '.pdf')
     response.headers.set('Content-Type', 'application/pdf')
