@@ -18,4 +18,4 @@ app.register_blueprint(be, url_prefix="/bon/echange")
  #   return "hello"
 
 if __name__ == '__main__':
-  app.run(debug=True)
+  app.run(debug=True, host="0.0.0.0")
