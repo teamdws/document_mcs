@@ -40,7 +40,14 @@ def facture_pdf():
         
        else : num = 0
     except AttributeError: num = 0
-    
+    try:
+       if 'projet' in pdf.facture_data :
+        num =  pdf.facture_data['projet']['idagence'] 
+        pdf.contrat = "N° Projet : "+str(pdf.facture_data['projet']['idprojet'] )
+        pdf.boncommande =  "Bon de commande : "+str(pdf.facture_data['projet']['boncommande'] )  if pdf.facture_data['projet']['boncommande'] != None else ""
+        
+       else : num = 0
+    except AttributeError: num = 0
     pdf.Title = type_document+" N° : "+str(num)+"/"+str(pdf.facture_data['idfacture']) 
     pdf.totalht = 0   
     pdf.totalttc = 0 
