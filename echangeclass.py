@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from contextlib import nullcontext
 from flask import Blueprint, make_response, request
 import base64
 import hashlib
@@ -130,6 +131,8 @@ class PDF(FPDF, HTMLMixin):
             if len(self.contrat_data['equipements'])>=0:
                 result = self.contrat_data['equipements']
                 self.set_font("Roboto","" ,8)
+                rt = None
+                l = None
                 for r in result:
                     ref = ""
                     n = r
@@ -140,34 +143,40 @@ class PDF(FPDF, HTMLMixin):
                         ref = (next(a))['refinterne']
                     
                     if (  str(r['IDRETOUR']) == str(self.idlivraison) ) :
-                        self.set_font("Roboto", "B" ,size=8)
-                        self.cell(  (self.epw), self.font_size +3, fill=False, txt= "MEUBLE A REPRENDRE",align='L', border='LR')
-                        self.ln( self.font_size +3)
-                        self.set_font("Roboto", "" ,size=8)
-                        self.poids = self.poids + int(r.get('Qte' , 0)) * float(r.get('poids', 0))
-                        self.cell(  (self.epw)/8, self.font_size +3, fill=False, txt= str(ref),align='L', border=1)
-
-                        self.cell(  7 * self.epw/16,  self.font_size +3, fill=False, txt= str( r['denomination'])[:60],  align='L', border=1) 
-                        self.cell(  self.epw/16, self.font_size +3, fill=False, txt= str(r['Qte']), align='L', border=1)
-                        self.cell(  self.epw/16, self.font_size +3, fill=False, txt="", align='L', border=1)
-
-                        self.cell(  5 * self.epw/16, self.font_size +3, fill=False, txt= "" ,  align='L', border=1)
-                        self.ln( self.font_size +3)
+                        rt = r
+                        
                     
                     if ( str(r['IDLIVRAISON']) == str(self.idlivraison) ) :
-                        self.set_font("Roboto", "B" ,size=8)
-                        self.cell(  (self.epw), self.font_size +3, fill=False, txt= "MEUBLE A LIVRER",align='L', border='LR')
-                        self.ln( self.font_size +3)
-                        self.set_font("Roboto", "" ,size=8)
-                        self.poids = self.poids + int(r.get('Qte' , 0)) * float(r.get('poids', 0))
-                        self.cell(  (self.epw)/8, self.font_size +3, fill=False, txt= str(ref),align='L', border=1)
+                        l = r
+                        
+                self.set_font("Roboto", "B" ,size=8)
+                self.cell(  (self.epw), self.font_size +3, fill=False, txt= "MEUBLE A REPRENDRE",align='L', border='LR')
+                self.ln( self.font_size +3)
+                self.set_font("Roboto", "" ,size=8)
+                self.poids = self.poids + int(rt.get('Qte' , 0)) * float(rt.get('poids', 0))
+                self.cell(  (self.epw)/8, self.font_size +3, fill=False, txt= str(ref),align='L', border=1)
 
-                        self.cell(  7 * self.epw/16,  self.font_size +3, fill=False, txt= str( r['denomination'])[:60],  align='L', border=1) 
-                        self.cell(  self.epw/16, self.font_size +3, fill=False, txt= str(r['Qte']), align='L', border=1)
-                        self.cell(  self.epw/16, self.font_size +3, fill=False, txt="", align='L', border=1)
+                self.cell(  7 * self.epw/16,  self.font_size +3, fill=False, txt= str( rt['denomination'])[:60],  align='L', border=1) 
+                self.cell(  self.epw/16, self.font_size +3, fill=False, txt= str(l['Qte']), align='L', border=1)
+                self.cell(  self.epw/16, self.font_size +3, fill=False, txt="", align='L', border=1)
 
-                        self.cell(  5 * self.epw/16, self.font_size +3, fill=False, txt= "" ,  align='L', border=1)
-                        self.ln( self.font_size +3)
+                self.cell(  5 * self.epw/16, self.font_size +3, fill=False, txt= "" ,  align='L', border=1)
+                self.ln( self.font_size +3)
+                
+                self.set_font("Roboto", "B" ,size=8)
+                self.cell(  (self.epw), self.font_size +3, fill=False, txt= "MEUBLE A LIVRER",align='L', border='LR')
+                self.ln( self.font_size +3)
+                self.set_font("Roboto", "" ,size=8)
+                self.poids = self.poids + int(l.get('Qte' , 0)) * float(l.get('poids', 0))
+                self.cell(  (self.epw)/8, self.font_size +3, fill=False, txt= str(ref),align='L', border=1)
+
+                self.cell(  7 * self.epw/16,  self.font_size +3, fill=False, txt= str( l['denomination'])[:60],  align='L', border=1) 
+                self.cell(  self.epw/16, self.font_size +3, fill=False, txt= str(l['Qte']), align='L', border=1)
+                self.cell(  self.epw/16, self.font_size +3, fill=False, txt="", align='L', border=1)
+
+                self.cell(  5 * self.epw/16, self.font_size +3, fill=False, txt= "" ,  align='L', border=1)
+                self.ln( self.font_size +3)
+                    
             self.set_font("Roboto","" ,12)
         
         
