@@ -26,6 +26,7 @@ class PDF(FPDF, HTMLMixin):
             self.set_font("Roboto","", size=10)
             self.ln()
             self.cell(0, 0, "Date : "+self.dte+"  "+self.contrat, 0, 0, "R")
+        
             self.ln(20)
                 
         def utilisation(self):
@@ -105,6 +106,9 @@ class PDF(FPDF, HTMLMixin):
                 s['denomination'] = n['description'] if n['description'] !=None else " "
                 s['montant_net'] = float(n['puht'])  if n['puht'] !=None else 0
                 s['remise'] = float(n['remise'])  if n['remise'] !=None else 0
+                if('idcontrat' in n and n['idcontrat'] != None):
+                    s['idcontrat'] = n['idcontrat'] 
+                    
                 try:
                     if int(n['service']) == 0 : 
                         s['montantHT'] = (int(n['qty'])* s['montant_net'] * (self.duree.days +1)) * (1 - float(n['remise'])/100)
@@ -135,6 +139,12 @@ class PDF(FPDF, HTMLMixin):
                 self.set_font("Roboto","" ,8)
                 for r in result:
                     
+                    if('idcontrat' in r and r['idcontrat'] != None):
+                        self.set_font("Roboto","B" ,8)
+                        self.cell(   self.epw, self.font_size +2, fill=False, txt= "Contrat N°: "+str(r['idcontrat']), align='L', border=1)
+                        self.ln( self.font_size +2)
+                        self.set_font("Roboto","" ,8)
+
                     self.cell(  2 * self.epw/12, self.font_size +3, fill=False, txt= str(r['Qte']), align='L', border=1)
                     self.cell(  (self.epw)/2, self.font_size +3, fill=False, txt= (r['denomination'])[:60],align='L', border=1)
                     self.cell(  self.epw/12, self.font_size +3, fill=False, txt= str(round(r['montant_net'],2))+" €",  align='L', border=1)
